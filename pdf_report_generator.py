@@ -322,7 +322,7 @@ class PDFReportGenerator:
         💡 BUSINESS IMPACT ESTIMATE
         • Potential fraud prevented: ${high_risk_count * 150:.2f} (est. $150 avg. fraud value per high-risk channel)
         • Quality improvement opportunity: {quality_dist.get('Medium-Low', 0) + quality_dist.get('Low', 0)} channels for optimization
-        • Processing efficiency: {(len(quality_df)/processing_time)*60:.0f} channels per hour analytical capacity
+        • Processing efficiency: {(len(quality_df)/max(processing_time, 0.01))*60:.0f} channels per hour analytical capacity
         """
         
         ax4.text(0.05, 0.95, performance_text, ha='left', va='top', fontsize=10,
