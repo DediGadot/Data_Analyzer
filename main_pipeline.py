@@ -19,6 +19,7 @@ from quality_scoring import QualityScorer
 from traffic_similarity import TrafficSimilarityModel
 from anomaly_detection import AnomalyDetector
 from model_evaluation import ModelEvaluator
+from pdf_report_generator import PDFReportGenerator
 
 # Configure logging
 logging.basicConfig(
