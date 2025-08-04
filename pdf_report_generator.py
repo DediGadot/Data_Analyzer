@@ -1068,7 +1068,7 @@ class PDFReportGenerator:
         # Calculate total processing time
         total_time = pipeline_results.get('pipeline_summary', {}).get('total_processing_time_minutes', 0)
         records_processed = pipeline_results.get('pipeline_summary', {}).get('records_processed', 0)
-        throughput = records_processed / max(total_time, 0.1) if total_time > 0 else 0
+        throughput = records_processed / max(total_time, 0.01) if total_time > 0 else 0
         
         performance_text = f"""
         🔧 MODEL PERFORMANCE SUMMARY
