@@ -49,6 +49,7 @@ class FraudDetectionPipeline:
         self.similarity_model = TrafficSimilarityModel()
         self.anomaly_detector = AnomalyDetector()
         self.evaluator = ModelEvaluator()
+        self.pdf_generator = PDFReportGenerator(output_dir)
         
     def run_complete_pipeline(self, sample_fraction: float = 0.1) -> Dict:
         """
