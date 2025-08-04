@@ -315,7 +315,7 @@ class PDFReportGenerator:
         performance_text = f"""
         📊 PIPELINE PERFORMANCE METRICS
         
-        Processing Efficiency: {processing_time:.1f} minutes total runtime • {len(quality_df)/processing_time:.0f} channels/minute
+        Processing Efficiency: {processing_time:.1f} minutes total runtime • {len(quality_df)/max(processing_time, 0.01):.0f} channels/minute
         Model Accuracy: Quality scoring R² > 0.85 • Anomaly detection coverage {anomalous_count/total_channels*100:.1f}%
         Data Quality: {len(quality_df)} channels with complete feature sets • 0% missing critical data points
         
