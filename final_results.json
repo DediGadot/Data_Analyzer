@@ -1,0 +1,747 @@
+{
+  "top_quality_channels": [
+    {
+      "quality_score": 8.285519146306171,
+      "quality_category": "High",
+      "volume": 150,
+      "bot_rate": 0.013333333333333334,
+      "high_risk": false
+    },
+    {
+      "quality_score": 8.151671090566932,
+      "quality_category": "High",
+      "volume": 103,
+      "bot_rate": 0.009708737864077669,
+      "high_risk": false
+    },
+    {
+      "quality_score": 8.084555610911973,
+      "quality_category": "High",
+      "volume": 72,
+      "bot_rate": 0.013888888888888888,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.950672582199034,
+      "quality_category": "High",
+      "volume": 111,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.942928819075035,
+      "quality_category": "High",
+      "volume": 73,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.924435540208319,
+      "quality_category": "High",
+      "volume": 133,
+      "bot_rate": 0.022556390977443608,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.924171447051104,
+      "quality_category": "High",
+      "volume": 182,
+      "bot_rate": 0.005494505494505495,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.908917151810384,
+      "quality_category": "High",
+      "volume": 309,
+      "bot_rate": 0.016181229773462782,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.811154661862894,
+      "quality_category": "High",
+      "volume": 47,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.7508953239447544,
+      "quality_category": "High",
+      "volume": 151,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.697435129182501,
+      "quality_category": "High",
+      "volume": 77,
+      "bot_rate": 0.012987012987012988,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.681829152719253,
+      "quality_category": "High",
+      "volume": 175,
+      "bot_rate": 0.045714285714285714,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.562268645197039,
+      "quality_category": "High",
+      "volume": 273,
+      "bot_rate": 0.01098901098901099,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.514162694183262,
+      "quality_category": "High",
+      "volume": 80,
+      "bot_rate": 0.0125,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.2945354393967365,
+      "quality_category": "High",
+      "volume": 198,
+      "bot_rate": 0.04040404040404041,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.236849198068486,
+      "quality_category": "High",
+      "volume": 69,
+      "bot_rate": 0.014492753623188406,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.225578346095042,
+      "quality_category": "High",
+      "volume": 113,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.21685479146626,
+      "quality_category": "High",
+      "volume": 147,
+      "bot_rate": 0.006802721088435374,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.210805068124327,
+      "quality_category": "High",
+      "volume": 73,
+      "bot_rate": 0.0547945205479452,
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.1893212257389925,
+      "quality_category": "High",
+      "volume": 128,
+      "bot_rate": 0.0,
+      "high_risk": false
+    }
+  ],
+  "bottom_quality_channels": [
+    {
+      "quality_score": 1.5568966543363907,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0,
+      "high_risk": true
+    },
+    {
+      "quality_score": 1.5568966543363907,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0,
+      "high_risk": true
+    },
+    {
+      "quality_score": 1.7815437625840316,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0,
+      "high_risk": true
+    },
+    {
+      "quality_score": 1.7815437625840316,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0,
+      "high_risk": true
+    },
+    {
+      "quality_score": 1.7815437625840316,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0,
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.8268309539085283,
+      "quality_category": "Low",
+      "volume": 18,
+      "bot_rate": 0.0,
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.9998901492638117,
+      "quality_category": "Low",
+      "volume": 19,
+      "bot_rate": 0.0,
+      "high_risk": true
+    },
+    {
+      "quality_score": 3.1767884812919465,
+      "quality_category": "Medium-Low",
+      "volume": 22,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 3.998998417877713,
+      "quality_category": "Medium-Low",
+      "volume": 1,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 3.998998417877713,
+      "quality_category": "Medium-Low",
+      "volume": 1,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 4.537175594914967,
+      "quality_category": "Medium-Low",
+      "volume": 19,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 4.679903273550381,
+      "quality_category": "Medium-Low",
+      "volume": 17,
+      "bot_rate": 0.058823529411764705,
+      "high_risk": false
+    },
+    {
+      "quality_score": 4.8223902199790025,
+      "quality_category": "Medium-Low",
+      "volume": 15,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 4.876096308509804,
+      "quality_category": "Medium-Low",
+      "volume": 5,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 4.905791213116735,
+      "quality_category": "Medium-Low",
+      "volume": 52,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 4.949169959370349,
+      "quality_category": "Medium-Low",
+      "volume": 8,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 4.990579586980073,
+      "quality_category": "Medium-Low",
+      "volume": 12,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 5.02455835176678,
+      "quality_category": "Medium-High",
+      "volume": 7,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 5.053341273409561,
+      "quality_category": "Medium-High",
+      "volume": 4,
+      "bot_rate": 0.0,
+      "high_risk": false
+    },
+    {
+      "quality_score": 5.127411442304526,
+      "quality_category": "Medium-High",
+      "volume": 16,
+      "bot_rate": 0.0,
+      "high_risk": false
+    }
+  ],
+  "high_risk_channels": [
+    {
+      "quality_score": 2.9998901492638117,
+      "quality_category": "Low",
+      "volume": 19,
+      "bot_rate": 0.0
+    },
+    {
+      "quality_score": 2.8268309539085283,
+      "quality_category": "Low",
+      "volume": 18,
+      "bot_rate": 0.0
+    },
+    {
+      "quality_score": 1.7815437625840316,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0
+    },
+    {
+      "quality_score": 1.7815437625840316,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0
+    },
+    {
+      "quality_score": 1.7815437625840316,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0
+    },
+    {
+      "quality_score": 1.5568966543363907,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0
+    },
+    {
+      "quality_score": 1.5568966543363907,
+      "quality_category": "Low",
+      "volume": 1,
+      "bot_rate": 1.0
+    }
+  ],
+  "most_anomalous_channels": [
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.043092195944073985,
+      "behavioral_elliptic_envelope_anomaly": true,
+      "behavioral_elliptic_envelope_score": -6316.620322286244,
+      "behavioral_one_class_svm_anomaly": false,
+      "behavioral_one_class_svm_score": 6.202673668243008e-06,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 273,
+      "unique_ips": 273,
+      "unique_users": 273,
+      "total_requests_z_score": 3.2728289167649955,
+      "total_requests_anomaly": true,
+      "unique_ips_z_score": 3.273806648575784,
+      "unique_ips_anomaly": true,
+      "unique_users_z_score": 3.2728289167649955,
+      "unique_users_anomaly": true,
+      "overall_anomaly_count": 6,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.12176818005198375,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3455.8822686760277,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.35487397182534597,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 297,
+      "unique_ips": 297,
+      "unique_users": 297,
+      "total_requests_z_score": 3.698645186284081,
+      "total_requests_anomaly": true,
+      "unique_ips_z_score": 3.6997226400270478,
+      "unique_ips_anomaly": true,
+      "unique_users_z_score": 3.698645186284081,
+      "unique_users_anomaly": true,
+      "overall_anomaly_count": 6,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.0061290824530358945,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3536.980998590331,
+      "behavioral_one_class_svm_anomaly": false,
+      "behavioral_one_class_svm_score": 0.0002827841312158519,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 313,
+      "unique_ips": 313,
+      "unique_users": 313,
+      "total_requests_z_score": 3.982522699296805,
+      "total_requests_anomaly": true,
+      "unique_ips_z_score": 3.98366663432789,
+      "unique_ips_anomaly": true,
+      "unique_users_z_score": 3.982522699296805,
+      "unique_users_anomaly": true,
+      "overall_anomaly_count": 5,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.0002641294256560123,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3535.340545267852,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -2.681948001326262e-05,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 309,
+      "unique_ips": 309,
+      "unique_users": 309,
+      "total_requests_z_score": 3.9115533210436237,
+      "total_requests_anomaly": true,
+      "unique_ips_z_score": 3.9126806357526798,
+      "unique_ips_anomaly": true,
+      "unique_users_z_score": 3.9115533210436237,
+      "unique_users_anomaly": true,
+      "overall_anomaly_count": 5,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.03699338782845174,
+      "behavioral_elliptic_envelope_anomaly": true,
+      "behavioral_elliptic_envelope_score": -34739.262926654104,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.00020308657708878464,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 180,
+      "unique_ips": 180,
+      "unique_users": 180,
+      "total_requests_z_score": 1.6227908723785387,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.6233821817021379,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.6227908723785387,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 4,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.055002900146989164,
+      "behavioral_elliptic_envelope_anomaly": true,
+      "behavioral_elliptic_envelope_score": -43842.84319395539,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.011199226794097683,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 198,
+      "unique_ips": 198,
+      "unique_users": 198,
+      "total_requests_z_score": 1.942153074517853,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.9428191752905855,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.942153074517853,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 4,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.0006163019931971769,
+      "behavioral_elliptic_envelope_anomaly": true,
+      "behavioral_elliptic_envelope_score": -32495.601194821487,
+      "behavioral_one_class_svm_anomaly": false,
+      "behavioral_one_class_svm_score": 0.02046392273692499,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 175,
+      "unique_ips": 174,
+      "unique_users": 175,
+      "total_requests_z_score": 1.5340791495620627,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.5169031838393219,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.5340791495620627,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 3,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.04935058950853105,
+      "behavioral_elliptic_envelope_anomaly": true,
+      "behavioral_elliptic_envelope_score": -7681.0814015588,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.0003185663601130706,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 97,
+      "unique_ips": 97,
+      "unique_users": 97,
+      "total_requests_z_score": 0.15017627362503452,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 0.1504227112665178,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 0.15017627362503452,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 3,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.17415737192089775,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 1120.2927931748036,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.6519990063927834,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 5,
+      "unique_ips": 5,
+      "unique_users": 5,
+      "total_requests_z_score": 1.4821194261981268,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.482255255963326,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.4821194261981268,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 3,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.021591005253568607,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3539.3210093466028,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -1.4047509353520837e-05,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 1,
+      "unique_ips": 1,
+      "unique_users": 1,
+      "total_requests_z_score": 1.5530888044513078,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.5532412545385366,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.5530888044513078,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 3,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.07040455045512839,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3022.465571383604,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.00018737055905737598,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 7,
+      "unique_ips": 7,
+      "unique_users": 7,
+      "total_requests_z_score": 1.4466347370715362,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.4467622566757208,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.4466347370715362,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 3,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.023402127801678774,
+      "behavioral_elliptic_envelope_anomaly": true,
+      "behavioral_elliptic_envelope_score": -12153.253330944543,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -1.7181365203677856e-05,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 113,
+      "unique_ips": 113,
+      "unique_users": 113,
+      "total_requests_z_score": 0.43405378663775823,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 0.43436670556736023,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 0.43405378663775823,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 3,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.04865560450441059,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3500.5360341322294,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.2876073822243459,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 114,
+      "unique_ips": 114,
+      "unique_users": 114,
+      "total_requests_z_score": 0.4517961312010535,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 0.4521132052111629,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 0.4517961312010535,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.05717487322972792,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3229.2073460054,
+      "behavioral_one_class_svm_anomaly": false,
+      "behavioral_one_class_svm_score": 0.0005483711434530747,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 8,
+      "unique_ips": 8,
+      "unique_users": 8,
+      "total_requests_z_score": 1.428892392508241,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.4290157570319182,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.428892392508241,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": true,
+      "behavioral_isolation_forest_score": -0.009394957021894634,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3516.9126161333998,
+      "behavioral_one_class_svm_anomaly": false,
+      "behavioral_one_class_svm_score": 0.031083919257769876,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 1,
+      "unique_ips": 1,
+      "unique_users": 1,
+      "total_requests_z_score": 1.5530888044513078,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.5532412545385366,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.5530888044513078,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.02707928620007216,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3469.2851363141663,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -7.711071611748999e-05,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 16,
+      "unique_ips": 16,
+      "unique_users": 16,
+      "total_requests_z_score": 1.2869536360018792,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 1.287043759881497,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 1.2869536360018792,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.0018899785538545322,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3551.9733118236322,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.00022521067300584896,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 214,
+      "unique_ips": 214,
+      "unique_users": 214,
+      "total_requests_z_score": 2.226030587530577,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 2.226763169591428,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 2.226030587530577,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.0961591626907437,
+      "behavioral_elliptic_envelope_anomaly": false,
+      "behavioral_elliptic_envelope_score": 3583.9734583218587,
+      "behavioral_one_class_svm_anomaly": true,
+      "behavioral_one_class_svm_score": -0.0002843696640724147,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 106,
+      "unique_ips": 106,
+      "unique_users": 106,
+      "total_requests_z_score": 0.3098573746946916,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 0.31014120806074164,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 0.3098573746946916,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.0716308662131343,
+      "behavioral_elliptic_envelope_anomaly": true,
+      "behavioral_elliptic_envelope_score": -18552.71801271315,
+      "behavioral_one_class_svm_anomaly": false,
+      "behavioral_one_class_svm_score": 0.04152808372075634,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 138,
+      "unique_ips": 138,
+      "unique_users": 138,
+      "total_requests_z_score": 0.877612400720139,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 0.8780291966624265,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 0.877612400720139,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "behavioral_isolation_forest_anomaly": false,
+      "behavioral_isolation_forest_score": 0.09964456037456482,
+      "behavioral_elliptic_envelope_anomaly": true,
+      "behavioral_elliptic_envelope_score": -8584.644807793804,
+      "behavioral_one_class_svm_anomaly": false,
+      "behavioral_one_class_svm_score": 0.10748409897412681,
+      "behavioral_anomaly_ensemble": true,
+      "total_requests": 101,
+      "unique_ips": 101,
+      "unique_users": 101,
+      "total_requests_z_score": 0.22114565187821547,
+      "total_requests_anomaly": false,
+      "unique_ips_z_score": 0.2214087098417284,
+      "unique_ips_anomaly": false,
+      "unique_users_z_score": 0.22114565187821547,
+      "unique_users_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    }
+  ],
+  "cluster_summary": {
+    "total_clusters": 10,
+    "cluster_names": [
+      "cluster_0",
+      "cluster_1",
+      "cluster_2",
+      "cluster_3",
+      "cluster_4",
+      "cluster_5",
+      "cluster_6",
+      "cluster_7",
+      "cluster_8",
+      "cluster_9"
+    ]
+  }
+}
