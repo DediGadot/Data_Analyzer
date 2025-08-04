@@ -227,9 +227,14 @@ class FraudDetectionPipeline:
             logger.info("Step 8: Generating comprehensive RESULTS.md report...")
             self._generate_results_markdown(quality_results_df, cluster_profiles, anomaly_results)
             
+            # Step 9: Generate Professional PDF Report
+            logger.info("Step 9: Generating comprehensive PDF report...")
+            pdf_report_path = self._generate_pdf_report(quality_results_df, cluster_profiles, anomaly_results)
+            
             logger.info("=" * 60)
             logger.info("FRAUD DETECTION PIPELINE COMPLETED SUCCESSFULLY")
             logger.info(f"Total time: {total_time/60:.2f} minutes")
+            logger.info(f"PDF Report: {pdf_report_path}")
             logger.info("=" * 60)
             
             return self.pipeline_results
@@ -568,7 +573,7 @@ def main():
     # Configuration
     DATA_PATH = "/home/fiod/shimshi/bq-results-20250804-141411-1754316868932.csv"
     OUTPUT_DIR = "/home/fiod/shimshi/"
-    SAMPLE_FRACTION = 0.5  # Use 1% of data for demo (adjust as needed)
+    SAMPLE_FRACTION = 0.2  # Use 1% of data for demo (adjust as needed)
     
     # Initialize and run pipeline
     pipeline = FraudDetectionPipeline(DATA_PATH, OUTPUT_DIR)
