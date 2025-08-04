@@ -569,6 +569,37 @@ Based on the analysis, we recommend the following actions:
             f.write(md_content)
         
         logger.info(f"Comprehensive results report saved to {results_path}")
+    
+    def _generate_pdf_report(self,
+                           quality_results: pd.DataFrame,
+                           cluster_profiles: Dict,
+                           anomaly_results: pd.DataFrame) -> str:
+        """Generate comprehensive PDF report with all visualizations and insights."""
+        
+        try:
+            # Load final results for comprehensive data
+            final_results = {}
+            final_results_path = os.path.join(self.output_dir, "final_results.json")
+            if os.path.exists(final_results_path):
+                import json
+                with open(final_results_path, 'r') as f:
+                    final_results = json.load(f)
+            
+            # Generate the PDF report
+            pdf_path = self.pdf_generator.generate_comprehensive_report(
+                quality_results, 
+                anomaly_results, 
+                final_results, 
+                self.pipeline_results
+            )
+            
+            logger.info(f"PDF report generated successfully: {pdf_path}")
+            return pdf_path
+            
+        except Exception as e:
+            logger.error(f"Failed to generate PDF report: {e}")
+            # Don't fail the entire pipeline if PDF generation fails
+            return f"PDF generation failed: {str(e)}"
 
 def main():
     """Main execution function."""
