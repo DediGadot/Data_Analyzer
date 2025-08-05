@@ -599,13 +599,14 @@ class OptimizedFraudDetectionPipeline:
             logger.info("Step 2: Engineering features in parallel...")
             step_start = time.time()
             
-            features_df = self.feature_engineer.create_features_parallel(df)
+            features_df = self.feature_engineer.create_features_parallel(df, progress_tracker=self.progress_tracker)
             
             # Create channel features efficiently
             channel_features = self._create_channel_features_fast(features_df)
             
             self.monitor.log_memory("feature_engineering")
             self.monitor.log_time("feature_engineering", step_start)
+            self.progress_tracker.complete_step("Feature Engineering")
             
             self.pipeline_results['feature_engineering'] = {
                 'original_features': df.shape[1],
