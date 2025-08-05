@@ -1363,10 +1363,17 @@ class MultilingualPDFReportGenerator:
                 
                 # Bot rate boxplot
                 story.append(Paragraph(self.t('bot_rate_analysis', lang), styles['SubsectionHeading']))
-                bot_rate_plot = self.create_bot_rate_boxplot(quality_df, lang)
-                if bot_rate_plot:
-                    story.append(Image(bot_rate_plot, width=5*inch, height=3*inch))
-                    self.add_plot_description(story, 'bot_rate_analysis', lang, styles)
+                try:
+                    bot_rate_plot = self.create_bot_rate_boxplot(quality_df, lang)
+                    if bot_rate_plot and os.path.exists(bot_rate_plot):
+                        story.append(Image(bot_rate_plot, width=5*inch, height=3*inch))
+                        self.add_plot_description(story, 'bot_rate_analysis', lang, styles)
+                    else:
+                        logger.warning(f"Bot rate plot not created for {lang}")
+                        story.append(Paragraph(f"[Bot rate plot unavailable for {lang}]", styles['CustomNormal']))
+                except Exception as e:
+                    logger.error(f"Error creating bot rate plot for {lang}: {e}")
+                    story.append(Paragraph(f"[Error creating bot rate plot: {str(e)}]", styles['CustomNormal']))
                 
                 # Risk matrix
                 story.append(Paragraph(self.t('risk_matrix', lang), styles['SubsectionHeading']))
