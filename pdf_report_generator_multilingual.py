@@ -375,8 +375,35 @@ class MultilingualPDFReportGenerator:
         """Create quality score distribution histogram."""
         plt.figure(figsize=(10, 6))
         
-        # Create the histogram
-        plt.hist(df['quality_score'], bins=20, edgecolor='black', alpha=0.7, color='#1f77b4')
+        try:
+            # Check for sufficient data and unique values
+            unique_values = len(df['quality_score'].unique())
+            
+            if unique_values <= 1:
+                # Handle single unique value case
+                bins = 1
+                logger.warning(f"Only {unique_values} unique quality score values, using single bin")
+            elif unique_values <= 5:
+                # Use fewer bins for limited unique values
+                bins = min(unique_values, 5)
+                logger.warning(f"Limited unique values ({unique_values}), using {bins} bins")
+            else:
+                # Standard case
+                bins = min(20, unique_values // 2)
+            
+            # Create the histogram
+            plt.hist(df['quality_score'], bins=bins, edgecolor='black', alpha=0.7, color='#1f77b4')
+            
+        except Exception as e:
+            logger.error(f"Error creating histogram: {e}")
+            # Fallback: create a simple bar chart instead
+            value_counts = df['quality_score'].value_counts().head(10)
+            plt.bar(range(len(value_counts)), value_counts.values, color='#1f77b4', alpha=0.7)
+            plt.xticks(range(len(value_counts)), [f'{v:.2f}' for v in value_counts.index])
+            if lang == 'he':
+                plt.xlabel('ערכי ציון איכות', fontsize=12)
+            else:
+                plt.xlabel('Quality Score Values', fontsize=12)
         
         # Set labels based on language
         if lang == 'he':
@@ -502,18 +529,74 @@ class MultilingualPDFReportGenerator:
         """Create risk assessment matrix heatmap."""
         plt.figure(figsize=(10, 8))
         
-        # Create risk matrix data
-        bot_rate_bins = [0, 0.1, 0.3, 0.5, 0.7, 1.0]
-        volume_bins = [0, 10, 100, 1000, 10000, df['volume'].max()]
+        try:
+            # Create risk matrix data with robust binning
+            bot_rate_min, bot_rate_max = df['bot_rate'].min(), df['bot_rate'].max()
+            volume_min, volume_max = df['volume'].min(), df['volume'].max()
+            
+            # Handle edge cases where min == max
+            if bot_rate_min == bot_rate_max:
+                # Single value case
+                bot_rate_bins = [bot_rate_min - 0.01, bot_rate_min + 0.01]
+                bot_rate_labels = [f'{bot_rate_min:.1%}']
+                logger.warning(f"Single bot_rate value detected: {bot_rate_min}")
+            else:
+                # Normal case with proper bins
+                bot_rate_bins = [0, 0.1, 0.3, 0.5, 0.7, 1.0]
+                # Ensure bins cover the data range
+                if bot_rate_max > 1.0:
+                    bot_rate_bins[-1] = bot_rate_max + 0.01
+                if bot_rate_min < 0:
+                    bot_rate_bins[0] = bot_rate_min - 0.01
+                bot_rate_labels = ['0-10%', '10-30%', '30-50%', '50-70%', '70-100%']
+            
+            if volume_min == volume_max:
+                # Single value case
+                volume_bins = [volume_min - 1, volume_min + 1]
+                volume_labels = [f'{volume_min:.0f}']
+                logger.warning(f"Single volume value detected: {volume_min}")
+            else:
+                # Normal case with proper bins
+                volume_bins = [0, 10, 100, 1000, 10000, max(volume_max + 1, 10000)]
+                volume_labels = ['0-10', '10-100', '100-1K', '1K-10K', '10K+']
+                
+                # Adjust bins if data doesn't fit standard ranges
+                if volume_max < 10:
+                    volume_bins = [0, volume_max/3, 2*volume_max/3, volume_max + 1]
+                    volume_labels = ['Low', 'Medium', 'High']
+                elif volume_max < 100:
+                    volume_bins = [0, 10, 50, volume_max + 1]
+                    volume_labels = ['0-10', '10-50', '50+']
+            
+            # Ensure bins are monotonically increasing
+            bot_rate_bins = sorted(set(bot_rate_bins))
+            volume_bins = sorted(set(volume_bins))
+            
+            # Adjust labels if bins were modified
+            if len(bot_rate_bins) - 1 != len(bot_rate_labels):
+                bot_rate_labels = [f'Bin{i}' for i in range(len(bot_rate_bins) - 1)]
+            if len(volume_bins) - 1 != len(volume_labels):
+                volume_labels = [f'Bin{i}' for i in range(len(volume_bins) - 1)]
+            
+            # Create bins
+            df_temp = df.copy()
+            df_temp['bot_rate_bin'] = pd.cut(df_temp['bot_rate'], bins=bot_rate_bins, labels=bot_rate_labels, include_lowest=True)
+            df_temp['volume_bin'] = pd.cut(df_temp['volume'], bins=volume_bins, labels=volume_labels, include_lowest=True)
         
-        bot_rate_labels = ['0-10%', '10-30%', '30-50%', '50-70%', '70-100%']
-        volume_labels = ['0-10', '10-100', '100-1K', '1K-10K', '10K+']
-        
-        df['bot_rate_bin'] = pd.cut(df['bot_rate'], bins=bot_rate_bins, labels=bot_rate_labels)
-        df['volume_bin'] = pd.cut(df['volume'], bins=volume_bins, labels=volume_labels)
-        
-        # Create pivot table
-        risk_matrix = pd.crosstab(df['bot_rate_bin'], df['volume_bin'])
+            # Create pivot table
+            risk_matrix = pd.crosstab(df_temp['bot_rate_bin'], df_temp['volume_bin'])
+            
+        except Exception as e:
+            logger.error(f"Error creating risk matrix bins: {e}")
+            # Fallback: create simple 2x2 matrix based on medians
+            df_temp = df.copy()
+            bot_rate_median = df['bot_rate'].median()
+            volume_median = df['volume'].median()
+            
+            df_temp['bot_rate_bin'] = df['bot_rate'].apply(lambda x: 'High' if x >= bot_rate_median else 'Low')
+            df_temp['volume_bin'] = df['volume'].apply(lambda x: 'High' if x >= volume_median else 'Low')
+            
+            risk_matrix = pd.crosstab(df_temp['bot_rate_bin'], df_temp['volume_bin'])
         
         # Create heatmap
         sns.heatmap(risk_matrix, annot=True, fmt='d', cmap='YlOrRd', 
@@ -708,7 +791,36 @@ class MultilingualPDFReportGenerator:
             cluster_quality = quality_df[quality_df['cluster'] != -1].groupby('cluster')['quality_score'].mean().sort_values(ascending=False)
         else:
             # Create synthetic clusters if not available
-            quality_df['cluster'] = pd.qcut(quality_df['quality_score'], q=5, labels=['Cluster 0', 'Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4'])
+            try:
+                unique_values = len(quality_df['quality_score'].unique())
+                if unique_values <= 1:
+                    # Single value case - create one cluster
+                    quality_df['cluster'] = 'Cluster 0'
+                    logger.warning("Single unique quality score value, creating single cluster")
+                elif unique_values < 5:
+                    # Few unique values - use fewer quantiles
+                    q = min(unique_values, 3)
+                    quality_df['cluster'] = pd.qcut(quality_df['quality_score'], q=q, labels=[f'Cluster {i}' for i in range(q)], duplicates='drop')
+                    logger.warning(f"Limited unique values ({unique_values}), using {q} clusters")
+                else:
+                    # Normal case
+                    quality_df['cluster'] = pd.qcut(quality_df['quality_score'], q=5, labels=['Cluster 0', 'Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4'], duplicates='drop')
+                    
+            except Exception as e:
+                logger.error(f"Error creating clusters with qcut: {e}")
+                # Ultimate fallback: use simple binning based on value ranges
+                min_score, max_score = quality_df['quality_score'].min(), quality_df['quality_score'].max()
+                if min_score == max_score:
+                    quality_df['cluster'] = 'Cluster 0'
+                else:
+                    # Create 3 equal-width bins
+                    range_size = (max_score - min_score) / 3
+                    quality_df['cluster'] = quality_df['quality_score'].apply(lambda x: 
+                        'Cluster 0' if x < min_score + range_size
+                        else 'Cluster 1' if x < min_score + 2 * range_size
+                        else 'Cluster 2'
+                    )
+            
             cluster_quality = quality_df.groupby('cluster')['quality_score'].mean()
         
         # Create bar chart
@@ -748,7 +860,24 @@ class MultilingualPDFReportGenerator:
         
         # For demonstration, create synthetic time-based data
         # Group by volume quartiles as proxy for time periods
-        quality_df['period'] = pd.qcut(quality_df.index, q=10, labels=[f'P{i+1}' for i in range(10)])
+        try:
+            n_periods = min(10, len(quality_df) // 2)  # Ensure we have enough data per period
+            if n_periods <= 1:
+                # Not enough data for multiple periods
+                quality_df['period'] = 'P1'
+                logger.warning("Insufficient data for multiple time periods, using single period")
+            else:
+                # Use qcut with duplicates handling
+                quality_df['period'] = pd.qcut(quality_df.index, q=n_periods, labels=[f'P{i+1}' for i in range(n_periods)], duplicates='drop')
+                
+        except Exception as e:
+            logger.error(f"Error creating time periods with qcut: {e}")
+            # Fallback: create periods based on index ranges
+            n_periods = min(5, len(quality_df))
+            period_size = len(quality_df) // n_periods
+            quality_df['period'] = quality_df.index // max(1, period_size)
+            quality_df['period'] = quality_df['period'].apply(lambda x: f'P{int(x)+1}')
+        
         trend_data = quality_df.groupby('period')['quality_score'].agg(['mean', 'std'])
         
         # Plot trend with confidence interval
