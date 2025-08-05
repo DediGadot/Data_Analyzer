@@ -9,20 +9,27 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-# Create sample data
+# Create sample data - test with small dataset that would cause original errors
 np.random.seed(42)
-n_channels = 1000
+
+# Test case: Small dataset with limited unique values (edge case that caused original errors)
+n_channels = 5  # Very small dataset
 
 quality_df = pd.DataFrame({
     'channelId': [f'CH{i:04d}' for i in range(n_channels)],
-    'quality_score': np.random.uniform(0, 10, n_channels),
-    'bot_rate': np.random.beta(2, 5, n_channels),
-    'volume': np.random.lognormal(5, 2, n_channels),
-    'quality_category': pd.cut(np.random.uniform(0, 10, n_channels), 
-                              bins=[0, 2.5, 5, 7.5, 10], 
-                              labels=['Low', 'Medium-Low', 'Medium-High', 'High']),
-    'high_risk': np.random.choice([True, False], n_channels, p=[0.2, 0.8])
+    'quality_score': [3.0, 3.0, 7.0, 7.0, 7.0],  # Only 2 unique values
+    'bot_rate': [0.1, 0.1, 0.8, 0.8, 0.8],       # Only 2 unique values  
+    'volume': [50, 50, 200, 200, 200],           # Only 2 unique values
+    'quality_category': ['Low', 'Low', 'High', 'High', 'High'],
+    'high_risk': [False, False, True, True, True]
 })
+
+print("TESTING WITH EDGE CASE DATA:")
+print(f"Dataset size: {len(quality_df)} rows")
+print(f"Unique quality scores: {quality_df['quality_score'].nunique()}")
+print(f"Unique bot rates: {quality_df['bot_rate'].nunique()}")
+print(f"Unique volumes: {quality_df['volume'].nunique()}")
+print("This data would have caused 'bins must increase monotonically' errors in the original code.")
 
 # Create sample anomaly data
 anomaly_df = pd.DataFrame({
