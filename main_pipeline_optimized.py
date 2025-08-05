@@ -813,6 +813,15 @@ Processing Speed: {self.pipeline_results['pipeline_summary'].get('records_per_se
                 with open(results_path, 'r') as f:
                     final_results = json.load(f)
             
+            # Ensure quality_results has the required structure for PDF generation
+            if 'channelId' not in quality_results.columns and quality_results.index.name != 'channelId':
+                # Reset index if channelId is in the index
+                if 'channelId' in str(quality_results.index.names):
+                    quality_results = quality_results.reset_index()
+                else:
+                    # Add a dummy channelId column if missing
+                    quality_results['channelId'] = range(len(quality_results))
+            
             # Generate PDFs
             en_path, he_path = self.pdf_generator.generate_comprehensive_report(
                 quality_results,
@@ -825,7 +834,7 @@ Processing Speed: {self.pipeline_results['pipeline_summary'].get('records_per_se
             
         except Exception as e:
             logger.error(f"Failed to generate PDF report: {e}")
-            return f"PDF generation failed: {str(e)}"
+            return None
 
 
 def main():
