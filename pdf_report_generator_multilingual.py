@@ -480,18 +480,48 @@ class MultilingualPDFReportGenerator:
         """Create bot rate analysis by quality category."""
         plt.figure(figsize=(10, 6))
         
-        # Prepare data
+        # Prepare data with error handling
         quality_categories = ['Low', 'Medium-Low', 'Medium-High', 'High']
         
-        # Create boxplot
-        df_copy = df.copy()
-        df_copy['quality_category'] = pd.Categorical(df_copy['quality_category'], 
-                                                    categories=quality_categories, 
-                                                    ordered=True)
-        df_copy = df_copy.sort_values('quality_category')
-        
-        box_plot = df_copy.boxplot(column='bot_rate', by='quality_category', 
-                                  patch_artist=True, figsize=(10, 6))
+        try:
+            # Create boxplot
+            df_copy = df.copy()
+            
+            # Check if quality_category column exists and has valid data
+            if 'quality_category' not in df_copy.columns:
+                logger.warning("quality_category column missing, creating from quality_score")
+                # Create categories based on quality score quartiles
+                df_copy['quality_category'] = pd.qcut(df_copy['quality_score'], q=4, labels=quality_categories, duplicates='drop')
+            
+            # Ensure we have data in multiple categories
+            category_counts = df_copy['quality_category'].value_counts()
+            if len(category_counts) <= 1:
+                logger.warning("Only one quality category found, creating simple bar plot instead")
+                # Fallback to simple bar chart
+                mean_bot_rate = df_copy['bot_rate'].mean()
+                plt.bar([0], [mean_bot_rate], color='#1f77b4', alpha=0.7)
+                plt.xticks([0], [str(df_copy['quality_category'].iloc[0])])
+                box_plot = plt.gca()
+            else:
+                df_copy['quality_category'] = pd.Categorical(df_copy['quality_category'], 
+                                                            categories=quality_categories, 
+                                                            ordered=True)
+                df_copy = df_copy.sort_values('quality_category')
+                
+                box_plot = df_copy.boxplot(column='bot_rate', by='quality_category', 
+                                          patch_artist=True, figsize=(10, 6))
+                
+        except Exception as e:
+            logger.error(f"Error creating boxplot: {e}")
+            # Ultimate fallback: simple bar chart of mean bot rates
+            if 'quality_category' in df.columns:
+                means = df.groupby('quality_category')['bot_rate'].mean()
+            else:
+                means = pd.Series([df['bot_rate'].mean()], index=['All Data'])
+            
+            plt.bar(range(len(means)), means.values, color='#1f77b4', alpha=0.7)
+            plt.xticks(range(len(means)), means.index)
+            box_plot = plt.gca()
         
         # Customize colors
         colors_list = ['#d62728', '#ff7f0e', '#ffbb78', '#2ca02c']
