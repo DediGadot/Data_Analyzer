@@ -224,41 +224,78 @@ class OptimizedFeatureEngineer:
         """Fast statistical computation using numba"""
         return np.mean(values), np.std(values), np.median(values)
     
-    def create_features_parallel(self, df: pd.DataFrame, chunk_size: int = 50000) -> pd.DataFrame:
-        """Create features in parallel across chunks"""
+    def create_features_parallel(self, df: pd.DataFrame, chunk_size: int = 50000, progress_tracker=None) -> pd.DataFrame:
+        """Create features in parallel across chunks with progress tracking"""
         logger.info(f"Starting parallel feature engineering with {self.n_jobs} workers")
         
         if self.approximate and len(df) > 100000:
             # In approximate mode, use base feature engineer directly for consistency
             logger.info("Using base feature engineer for approximate mode to ensure compatibility")
-            return self.base_engineer.create_all_features(df)
+            if progress_tracker:
+                with progress_tracker.step_progress_bar("Feature Engineering", total=1, desc="Creating features (approximate)") as pbar:
+                    result = self.base_engineer.create_all_features(df)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Feature Engineering", 100)
+                return result
+            else:
+                return self.base_engineer.create_all_features(df)
         
         # Split dataframe into chunks for parallel processing
         chunks = [df[i:i+chunk_size] for i in range(0, len(df), chunk_size)]
         logger.info(f"Split data into {len(chunks)} chunks of ~{chunk_size} rows")
         
-        # Process chunks in parallel using base feature engineer
-        with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-            futures = []
-            
-            for chunk in tqdm(chunks, desc="Submitting chunks"):
-                future = executor.submit(self._process_chunk_with_base_engineer, chunk.copy())
-                futures.append(future)
-            
-            # Collect results
-            all_results = []
-            for future in tqdm(as_completed(futures), total=len(futures), desc="Processing chunks"):
-                try:
-                    result = future.result()
-                    all_results.append(result)
-                except Exception as e:
-                    logger.error(f"Error processing chunk: {e}")
-                    # Fallback to base engineer for this chunk
-                    continue
+        if progress_tracker:
+            with progress_tracker.step_progress_bar("Feature Engineering", total=len(chunks), desc="Processing feature chunks") as pbar:
+                # Process chunks in parallel using base feature engineer
+                with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+                    futures = []
+                    
+                    # Submit all chunks
+                    for chunk in chunks:
+                        future = executor.submit(self._process_chunk_with_base_engineer, chunk.copy())
+                        futures.append(future)
+                    
+                    # Collect results with progress updates
+                    all_results = []
+                    for i, future in enumerate(as_completed(futures)):
+                        try:
+                            result = future.result()
+                            all_results.append(result)
+                        except Exception as e:
+                            logger.error(f"Error processing chunk: {e}")
+                            continue
+                        
+                        pbar.update(1)
+                        # Update main progress
+                        progress_pct = ((i + 1) / len(futures)) * 100
+                        progress_tracker.update_step_progress("Feature Engineering", progress_pct)
+        else:
+            # Fallback without progress tracking
+            with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+                futures = []
+                
+                for chunk in tqdm(chunks, desc="Submitting chunks"):
+                    future = executor.submit(self._process_chunk_with_base_engineer, chunk.copy())
+                    futures.append(future)
+                
+                # Collect results
+                all_results = []
+                for future in tqdm(as_completed(futures), total=len(futures), desc="Processing chunks"):
+                    try:
+                        result = future.result()
+                        all_results.append(result)
+                    except Exception as e:
+                        logger.error(f"Error processing chunk: {e}")
+                        continue
         
         # Combine all chunks
         logger.info("Combining all processed chunks")
-        result_df = pd.concat(all_results, ignore_index=True)
+        if progress_tracker:
+            with progress_tracker.step_progress_bar("Feature Engineering", total=1, desc="Combining feature chunks") as pbar:
+                result_df = pd.concat(all_results, ignore_index=True)
+                pbar.update(1)
+        else:
+            result_df = pd.concat(all_results, ignore_index=True)
         
         return result_df
     
