@@ -690,6 +690,7 @@ class OptimizedFraudDetectionPipeline:
             # Step 7: Generate Results
             logger.info("Step 7: Generating final results...")
             self._generate_final_results(quality_results_df, {}, anomaly_results)
+            self.progress_tracker.complete_step("Result Generation")
             
             # Pipeline summary
             total_time = time.time() - pipeline_start_time
