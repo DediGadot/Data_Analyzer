@@ -725,16 +725,37 @@ class OptimizedFraudDetectionPipeline:
             logger.info(f"PDF Report: {pdf_report_path}")
             logger.info("=" * 60)
             
+            # Add progress summary to results
+            progress_summary = self.progress_tracker.get_progress_summary()
+            self.pipeline_results['progress_summary'] = progress_summary
+            
+            logger.info("Pipeline Progress Summary:")
+            logger.info(f"Overall Progress: {progress_summary['overall_progress']:.1f}%")
+            for step, progress in progress_summary['step_progress'].items():
+                logger.info(f"  {step}: {progress:.1f}%")
+            
             return self.pipeline_results
             
         except Exception as e:
             logger.error(f"Pipeline failed: {e}")
+            
+            # Log progress status at failure
+            progress_summary = self.progress_tracker.get_progress_summary()
+            logger.error(f"Pipeline failed at {progress_summary['overall_progress']:.1f}% completion")
+            
             self.pipeline_results['pipeline_summary'] = {
                 'completion_status': 'FAILED',
                 'error': str(e),
-                'total_processing_time_seconds': time.time() - pipeline_start_time
+                'total_processing_time_seconds': time.time() - pipeline_start_time,
+                'progress_at_failure': progress_summary
             }
             raise
+        finally:
+            # Ensure progress bars are cleaned up
+            try:
+                self.progress_tracker.close_all()
+            except Exception as cleanup_error:
+                logger.warning(f"Error during progress bar cleanup: {cleanup_error}")
     
     def _load_data_parallel(self) -> pd.DataFrame:
         """Load data in parallel chunks"""
