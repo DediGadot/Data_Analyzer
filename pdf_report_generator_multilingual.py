@@ -272,71 +272,142 @@ class MultilingualPDFReportGenerator:
         }
     
     def _setup_hebrew_fonts(self):
-        """Setup Hebrew fonts for both ReportLab and matplotlib."""
+        """Setup Hebrew fonts for both ReportLab and matplotlib with comprehensive fallback system."""
         logger = logging.getLogger(__name__)
         
-        # Try to register Hebrew fonts with ReportLab
-        hebrew_font_paths = [
-            '/home/fiod/shimshi/fonts/NotoSansHebrew.ttf',
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-            '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+        # Font candidates with priorities and capabilities
+        font_candidates = [
+            {
+                'path': '/home/fiod/shimshi/fonts/NotoSansHebrew.ttf',
+                'name': 'NotoSansHebrew',
+                'priority': 1,
+                'has_latin': False,  # Hebrew-only font
+                'description': 'Noto Sans Hebrew (Primary)'
+            },
+            {
+                'path': '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+                'name': 'DejaVuSans',
+                'priority': 2,
+                'has_latin': True,   # Supports both Hebrew and Latin
+                'description': 'DejaVu Sans (Fallback)'
+            },
+            {
+                'path': '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+                'name': 'LiberationSans',
+                'priority': 3,
+                'has_latin': True,   # Supports both Hebrew and Latin
+                'description': 'Liberation Sans (Fallback)'
+            }
         ]
         
-        for font_path in hebrew_font_paths:
-            if os.path.exists(font_path):
+        self.registered_fonts = {}
+        self.primary_hebrew_font = None
+        self.fallback_latin_font = None
+        
+        # Try to register fonts in priority order
+        for font_info in sorted(font_candidates, key=lambda x: x['priority']):
+            if os.path.exists(font_info['path']):
                 try:
-                    # Register with ReportLab
-                    pdfmetrics.registerFont(TTFont('NotoSansHebrew', font_path))
-                    pdfmetrics.registerFont(TTFont('NotoSansHebrew-Bold', font_path))
-                    self.hebrew_font_available = True
-                    logger.info(f"Registered Hebrew font: {font_path}")
+                    # Test if font file is valid
+                    with open(font_info['path'], 'rb') as f:
+                        header = f.read(12)
+                        if len(header) < 12:
+                            logger.warning(f"Font file too small: {font_info['path']}")
+                            continue
                     
-                    # Configure matplotlib to use this font for Hebrew
-                    self._setup_matplotlib_hebrew_font(font_path)
-                    break
-                except Exception as e:
-                    logger.warning(f"Failed to register font {font_path}: {e}")
-                    continue
-        
-        if not self.hebrew_font_available:
-            logger.warning("No Hebrew fonts found, falling back to DejaVu Sans")
-            # Fallback to DejaVu Sans which has some Hebrew support
-            try:
-                dejavu_paths = [
-                    '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-                    '/System/Library/Fonts/DejaVuSans.ttf'
-                ]
-                for path in dejavu_paths:
-                    if os.path.exists(path):
-                        pdfmetrics.registerFont(TTFont('NotoSansHebrew', path))
-                        pdfmetrics.registerFont(TTFont('NotoSansHebrew-Bold', path))
+                    # Register with ReportLab
+                    font_name = font_info['name']
+                    pdfmetrics.registerFont(TTFont(font_name, font_info['path']))
+                    pdfmetrics.registerFont(TTFont(f'{font_name}-Bold', font_info['path']))  # Use same font for bold
+                    
+                    # Store font info
+                    self.registered_fonts[font_name] = {
+                        'path': font_info['path'],
+                        'has_latin': font_info['has_latin'],
+                        'description': font_info['description']
+                    }
+                    
+                    # Set primary Hebrew font
+                    if not self.primary_hebrew_font:
+                        self.primary_hebrew_font = font_name
                         self.hebrew_font_available = True
-                        logger.info(f"Using DejaVu Sans for Hebrew: {path}")
-                        break
-            except Exception as e:
-                logger.error(f"Failed to setup fallback font: {e}")
-                # Ultimate fallback - use system default
-                self.languages['he']['font'] = 'Helvetica'
+                    
+                    # Set fallback for Latin characters if font supports them
+                    if font_info['has_latin'] and not self.fallback_latin_font:
+                        self.fallback_latin_font = font_name
+                    
+                    # Configure matplotlib
+                    self._setup_matplotlib_hebrew_font(font_info['path'])
+                    
+                    logger.info(f"✓ Registered font: {font_info['description']} -> {font_name}")
+                    
+                except Exception as e:
+                    logger.warning(f"Failed to register font {font_info['path']}: {e}")
+                    continue
+            else:
+                logger.debug(f"Font not found: {font_info['path']}")
         
-        logger.info(f"Hebrew font setup complete. Available: {self.hebrew_font_available}")
+        # Setup font configuration
+        if self.hebrew_font_available:
+            # Use primary Hebrew font or fallback to Latin-supporting font
+            if self.primary_hebrew_font:
+                self.languages['he']['font'] = self.primary_hebrew_font
+                logger.info(f"✓ Hebrew font configured: {self.primary_hebrew_font}")
+            elif self.fallback_latin_font:
+                self.languages['he']['font'] = self.fallback_latin_font
+                logger.info(f"✓ Hebrew font configured (fallback): {self.fallback_latin_font}")
+        else:
+            # Ultimate fallback
+            logger.error("No Hebrew fonts available, using Helvetica")
+            self.languages['he']['font'] = 'Helvetica'
+        
+        # Summary
+        logger.info(f"Font setup complete:")
+        logger.info(f"  - Hebrew support: {'✓' if self.hebrew_font_available else '✗'}")
+        logger.info(f"  - Primary Hebrew font: {self.primary_hebrew_font or 'None'}")
+        logger.info(f"  - Fallback Latin font: {self.fallback_latin_font or 'None'}")
+        logger.info(f"  - Registered fonts: {len(self.registered_fonts)}")
     
     def _setup_matplotlib_hebrew_font(self, font_path: str):
-        """Configure matplotlib to use Hebrew font."""
+        """Configure matplotlib to use Hebrew font with proper fallback system."""
         try:
             # Add font to matplotlib's font manager
             fm.fontManager.addfont(font_path)
             
-            # Configure matplotlib to use only fonts that are actually available
-            # DejaVu Sans has good Unicode support including Hebrew characters
-            plt.rcParams['font.family'] = ['DejaVu Sans']
-            plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
+            # Get font properties
+            font_prop = fm.FontProperties(fname=font_path)
+            font_name = font_prop.get_name()
             
-            # Ensure proper UTF-8 handling
+            # Configure matplotlib font preferences
+            # Use a list of fonts with Hebrew support, in preference order
+            font_list = []
+            
+            # Add the specific font we just loaded
+            if font_name:
+                font_list.append(font_name)
+            
+            # Add reliable fallback fonts with Hebrew support
+            font_list.extend(['DejaVu Sans', 'Liberation Sans', 'Arial Unicode MS', 'Lucida Grande'])
+            
+            # Set matplotlib font configuration
+            plt.rcParams['font.family'] = ['sans-serif']
+            plt.rcParams['font.sans-serif'] = font_list
+            
+            # Ensure proper Unicode handling
             plt.rcParams['axes.unicode_minus'] = False
+            plt.rcParams['font.size'] = 10
             
-            logging.getLogger(__name__).info("Matplotlib configured for Hebrew text using DejaVu Sans")
+            # Store matplotlib font info
+            self.matplotlib_hebrew_font = font_name
+            
+            logging.getLogger(__name__).info(f"✓ Matplotlib configured for Hebrew: {font_name} + fallbacks")
+            
         except Exception as e:
             logging.getLogger(__name__).warning(f"Failed to configure matplotlib for Hebrew: {e}")
+            # Fallback configuration
+            plt.rcParams['font.family'] = ['sans-serif']
+            plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Liberation Sans']
+            self.matplotlib_hebrew_font = 'DejaVu Sans'
     
     def _process_hebrew_text(self, text: str) -> str:
         """Process Hebrew text for proper RTL display."""
@@ -383,10 +454,19 @@ class MultilingualPDFReportGenerator:
             normal_align = TA_LEFT
             heading_align = TA_LEFT
         
-        # Get appropriate font name
+        # Get appropriate font name with smart fallback
         font_name = self.languages[lang]['font']
-        if lang == 'he' and not self.hebrew_font_available:
-            font_name = 'Helvetica'
+        if lang == 'he':
+            if not self.hebrew_font_available:
+                font_name = 'Helvetica'
+                logger.warning(f"Using fallback font for Hebrew: {font_name}")
+            else:
+                # Verify the font is actually registered
+                try:
+                    pdfmetrics.getFont(font_name)
+                except Exception as e:
+                    logger.warning(f"Hebrew font {font_name} not accessible, using fallback")
+                    font_name = self.fallback_latin_font or 'Helvetica'
             
         # Title style
         styles.add(ParagraphStyle(
