@@ -1025,48 +1025,55 @@ class OptimizedFraudDetectionPipeline:
     def _generate_final_results(self, quality_results: pd.DataFrame,
                               cluster_profiles: Dict,
                               anomaly_results: pd.DataFrame):
-        """Generate final consolidated results"""
+        """Generate final consolidated results with progress tracking"""
         # Use base implementation but with optimized operations
         try:
-            # Top/bottom channels
-            top_n = min(20, len(quality_results))
-            top_quality = quality_results.nlargest(top_n, 'quality_score')
-            bottom_quality = quality_results.nsmallest(top_n, 'quality_score')
-            
-            # High-risk channels
-            high_risk = quality_results[quality_results['high_risk'] == True]
-            
-            # Most anomalous
-            if not anomaly_results.empty and 'overall_anomaly_count' in anomaly_results.columns:
-                most_anomalous = anomaly_results.nlargest(min(20, len(anomaly_results)), 'overall_anomaly_count')
-            else:
-                most_anomalous = pd.DataFrame()
-            
-            # Save results
-            results = {
-                'top_quality_channels': top_quality.head(10).to_dict('records'),
-                'bottom_quality_channels': bottom_quality.head(10).to_dict('records'),
-                'high_risk_channels': high_risk.head(50).to_dict('records'),
-                'most_anomalous_channels': most_anomalous.head(20).to_dict('records') if not most_anomalous.empty else [],
-                'summary_stats': {
-                    'total_channels': len(quality_results),
-                    'high_risk_count': len(high_risk),
-                    'avg_quality_score': quality_results['quality_score'].mean(),
-                    'processing_mode': 'approximate' if self.approximate else 'full'
+            with self.progress_tracker.step_progress_bar("Result Generation", total=6, desc="Generating final results") as pbar:
+                # Top/bottom channels
+                top_n = min(20, len(quality_results))
+                top_quality = quality_results.nlargest(top_n, 'quality_score')
+                bottom_quality = quality_results.nsmallest(top_n, 'quality_score')
+                pbar.update(1)
+                
+                # High-risk channels
+                high_risk = quality_results[quality_results['high_risk'] == True]
+                pbar.update(1)
+                
+                # Most anomalous
+                if not anomaly_results.empty and 'overall_anomaly_count' in anomaly_results.columns:
+                    most_anomalous = anomaly_results.nlargest(min(20, len(anomaly_results)), 'overall_anomaly_count')
+                else:
+                    most_anomalous = pd.DataFrame()
+                pbar.update(1)
+                
+                # Save results
+                results = {
+                    'top_quality_channels': top_quality.head(10).to_dict('records'),
+                    'bottom_quality_channels': bottom_quality.head(10).to_dict('records'),
+                    'high_risk_channels': high_risk.head(50).to_dict('records'),
+                    'most_anomalous_channels': most_anomalous.head(20).to_dict('records') if not most_anomalous.empty else [],
+                    'summary_stats': {
+                        'total_channels': len(quality_results),
+                        'high_risk_count': len(high_risk),
+                        'avg_quality_score': quality_results['quality_score'].mean(),
+                        'processing_mode': 'approximate' if self.approximate else 'full'
+                    }
                 }
-            }
-            
-            # Save to JSON
-            import json
-            results_path = os.path.join(self.output_dir, "final_results_optimized.json")
-            with open(results_path, 'w') as f:
-                json.dump(results, f, indent=2, default=str)
-            
-            # Save CSV files
-            quality_results.to_csv(os.path.join(self.output_dir, "channel_quality_scores_optimized.csv"), index=False)
-            if not anomaly_results.empty:
-                anomaly_results.to_csv(os.path.join(self.output_dir, "channel_anomaly_scores_optimized.csv"), index=False)
-            
+                pbar.update(1)
+                
+                # Save to JSON
+                import json
+                results_path = os.path.join(self.output_dir, "final_results_optimized.json")
+                with open(results_path, 'w') as f:
+                    json.dump(results, f, indent=2, default=str)
+                pbar.update(1)
+                
+                # Save CSV files
+                quality_results.to_csv(os.path.join(self.output_dir, "channel_quality_scores_optimized.csv"), index=False)
+                if not anomaly_results.empty:
+                    anomaly_results.to_csv(os.path.join(self.output_dir, "channel_anomaly_scores_optimized.csv"), index=False)
+                pbar.update(1)
+                
             logger.info(f"Final results saved to {results_path}")
             
         except Exception as e:
