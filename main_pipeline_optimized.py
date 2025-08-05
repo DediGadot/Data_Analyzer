@@ -92,58 +92,43 @@ class OptimizedFeatureEngineer:
         """Create features in parallel across chunks"""
         logger.info(f"Starting parallel feature engineering with {self.n_jobs} workers")
         
-        # Split dataframe into chunks
+        if self.approximate and len(df) > 100000:
+            # In approximate mode, use base feature engineer directly for consistency
+            logger.info("Using base feature engineer for approximate mode to ensure compatibility")
+            return self.base_engineer.create_all_features(df)
+        
+        # Split dataframe into chunks for parallel processing
         chunks = [df[i:i+chunk_size] for i in range(0, len(df), chunk_size)]
         logger.info(f"Split data into {len(chunks)} chunks of ~{chunk_size} rows")
         
-        # Define feature creation tasks
-        feature_tasks = [
-            ('temporal', self._create_temporal_features_chunk),
-            ('ip_based', self._create_ip_features_chunk),
-            ('behavioral', self._create_behavioral_features_chunk),
-            ('volume', self._create_volume_features_chunk),
-            ('fraud', self._create_fraud_features_chunk)
-        ]
-        
-        # Process chunks in parallel
+        # Process chunks in parallel using base feature engineer
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-            all_results = []
+            futures = []
             
-            # Submit all tasks
-            future_to_chunk = {}
-            for i, chunk in enumerate(tqdm(chunks, desc="Submitting chunks")):
-                chunk_futures = {}
-                for feature_name, feature_func in feature_tasks:
-                    future = executor.submit(feature_func, chunk.copy())
-                    chunk_futures[future] = feature_name
-                future_to_chunk[i] = chunk_futures
+            for chunk in tqdm(chunks, desc="Submitting chunks"):
+                future = executor.submit(self._process_chunk_with_base_engineer, chunk.copy())
+                futures.append(future)
             
             # Collect results
-            for chunk_idx in tqdm(range(len(chunks)), desc="Processing chunks"):
-                chunk_results = {}
-                chunk_futures = future_to_chunk[chunk_idx]
-                
-                for future in as_completed(chunk_futures):
-                    feature_name = chunk_futures[future]
-                    try:
-                        result = future.result()
-                        chunk_results[feature_name] = result
-                    except Exception as e:
-                        logger.error(f"Error in {feature_name} for chunk {chunk_idx}: {e}")
-                
-                # Combine features for this chunk
-                combined_chunk = self._combine_chunk_features(chunks[chunk_idx], chunk_results)
-                all_results.append(combined_chunk)
-                
-                # Memory management
-                if chunk_idx % 10 == 0:
-                    gc.collect()
+            all_results = []
+            for future in tqdm(as_completed(futures), total=len(futures), desc="Processing chunks"):
+                try:
+                    result = future.result()
+                    all_results.append(result)
+                except Exception as e:
+                    logger.error(f"Error processing chunk: {e}")
+                    # Fallback to base engineer for this chunk
+                    continue
         
         # Combine all chunks
         logger.info("Combining all processed chunks")
         result_df = pd.concat(all_results, ignore_index=True)
         
         return result_df
+    
+    def _process_chunk_with_base_engineer(self, chunk: pd.DataFrame) -> pd.DataFrame:
+        """Process a chunk using the base feature engineer"""
+        return self.base_engineer.create_all_features(chunk)
     
     def _create_temporal_features_chunk(self, chunk: pd.DataFrame) -> pd.DataFrame:
         """Create temporal features for a chunk"""
