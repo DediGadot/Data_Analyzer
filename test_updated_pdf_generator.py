@@ -102,4 +102,48 @@ def test_hebrew_pdf_generation():
             'hebrew_exists': os.path.exists(hebrew_pdf) if hebrew_pdf else False,
             'english_size': os.path.getsize(english_pdf) if english_pdf and os.path.exists(english_pdf) else 0,
             'hebrew_size': os.path.getsize(hebrew_pdf) if hebrew_pdf and os.path.exists(hebrew_pdf) else 0
-        }\n        \n        return results\n        \n    except Exception as e:\n        logger.error(f\"Test failed: {e}\")\n        import traceback\n        traceback.print_exc()\n        return None\n\ndef main():\n    \"\"\"Main test function.\"\"\"\n    results = test_hebrew_pdf_generation()\n    \n    if results:\n        logger.info(\"=== Test Results ===\")\n        logger.info(f\"English PDF: {results['english_pdf']}\")\n        logger.info(f\"Hebrew PDF: {results['hebrew_pdf']}\")\n        logger.info(f\"English PDF exists: {'✓' if results['english_exists'] else '✗'}\")\n        logger.info(f\"Hebrew PDF exists: {'✓' if results['hebrew_exists'] else '✗'}\")\n        \n        if results['english_exists']:\n            logger.info(f\"English PDF size: {results['english_size']:,} bytes\")\n        if results['hebrew_exists']:\n            logger.info(f\"Hebrew PDF size: {results['hebrew_size']:,} bytes\")\n        \n        # Success criteria\n        success = (\n            results['english_exists'] and results['hebrew_exists'] and\n            results['english_size'] > 50000 and results['hebrew_size'] > 50000\n        )\n        \n        if success:\n            logger.info(\"✓ Test completed successfully!\")\n            logger.info(\"✓ Hebrew fonts are working properly in PDF generation\")\n            return 0\n        else:\n            logger.error(\"✗ Test failed - PDFs not generated properly\")\n            return 1\n    else:\n        logger.error(\"✗ Test failed completely\")\n        return 1\n\nif __name__ == \"__main__\":\n    sys.exit(main())
+        }
+        
+        return results
+        
+    except Exception as e:
+        logger.error(f"Test failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+def main():
+    """Main test function."""
+    results = test_hebrew_pdf_generation()
+    
+    if results:
+        logger.info("=== Test Results ===")
+        logger.info(f"English PDF: {results['english_pdf']}")
+        logger.info(f"Hebrew PDF: {results['hebrew_pdf']}")
+        logger.info(f"English PDF exists: {'✓' if results['english_exists'] else '✗'}")
+        logger.info(f"Hebrew PDF exists: {'✓' if results['hebrew_exists'] else '✗'}")
+        
+        if results['english_exists']:
+            logger.info(f"English PDF size: {results['english_size']:,} bytes")
+        if results['hebrew_exists']:
+            logger.info(f"Hebrew PDF size: {results['hebrew_size']:,} bytes")
+        
+        # Success criteria
+        success = (
+            results['english_exists'] and results['hebrew_exists'] and
+            results['english_size'] > 50000 and results['hebrew_size'] > 50000
+        )
+        
+        if success:
+            logger.info("✓ Test completed successfully!")
+            logger.info("✓ Hebrew fonts are working properly in PDF generation")
+            return 0
+        else:
+            logger.error("✗ Test failed - PDFs not generated properly")
+            return 1
+    else:
+        logger.error("✗ Test failed completely")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
