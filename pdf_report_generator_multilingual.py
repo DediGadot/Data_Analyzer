@@ -538,10 +538,14 @@ class MultilingualPDFReportGenerator:
             plt.ylabel('שיעור בוטים', fontsize=12)
             plt.title('התפלגות שיעור בוטים לפי קטגוריית איכות', fontsize=14, fontweight='bold')
             plt.suptitle('')  # Remove default title
-            # Update x-axis labels for Hebrew
+            # Update x-axis labels for Hebrew only if they match the expected structure
             ax = plt.gca()
+            current_labels = ax.get_xticklabels()
             hebrew_labels = ['נמוך', 'בינוני-נמוך', 'בינוני-גבוה', 'גבוה']
-            ax.set_xticklabels(hebrew_labels)
+            
+            # Only set Hebrew labels if the count matches
+            if len(current_labels) <= len(hebrew_labels):
+                ax.set_xticklabels(hebrew_labels[:len(current_labels)])
         else:
             plt.xlabel('Quality Category', fontsize=12)
             plt.ylabel('Bot Rate', fontsize=12)
