@@ -739,14 +739,41 @@ class MultilingualPDFReportGenerator:
         scaler = StandardScaler()
         features_scaled = scaler.fit_transform(features)
         
-        # Perform clustering
-        n_clusters = min(5, len(quality_df) // 10)  # Ensure reasonable number of clusters
-        kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-        clusters = kmeans.fit_predict(features_scaled)
+        # Perform clustering with safety checks
+        n_samples = len(quality_df)
+        if n_samples < 2:
+            logger.warning("Insufficient data for clustering, creating single cluster")
+            clusters = np.zeros(n_samples)
+            n_clusters = 1
+        else:
+            n_clusters = max(1, min(5, n_samples // 10))  # Ensure reasonable number of clusters
+            if n_clusters == 1:
+                clusters = np.zeros(n_samples)
+            else:
+                try:
+                    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+                    clusters = kmeans.fit_predict(features_scaled)
+                except Exception as e:
+                    logger.error(f"K-means clustering failed: {e}")
+                    clusters = np.zeros(n_samples)
+                    n_clusters = 1
         
-        # Perform t-SNE
-        tsne = TSNE(n_components=2, random_state=42, perplexity=min(30, len(quality_df) - 1))
-        tsne_results = tsne.fit_transform(features_scaled[:min(1000, len(features_scaled))])  # Limit for performance
+        # Perform t-SNE with safety checks
+        try:
+            if n_samples < 3:
+                # Not enough samples for t-SNE, create dummy 2D coordinates
+                tsne_results = np.random.rand(n_samples, 2)
+                logger.warning("Insufficient data for t-SNE, using random coordinates")
+            else:
+                perplexity = min(30, max(1, n_samples - 1))
+                tsne = TSNE(n_components=2, random_state=42, perplexity=perplexity)
+                sample_size = min(1000, len(features_scaled))
+                tsne_results = tsne.fit_transform(features_scaled[:sample_size])
+        except Exception as e:
+            logger.error(f"t-SNE failed: {e}")
+            # Fallback: use PCA or simple 2D projection
+            sample_size = min(1000, len(features_scaled))
+            tsne_results = features_scaled[:sample_size, :2] if features_scaled.shape[1] >= 2 else np.random.rand(sample_size, 2)  # Limit for performance
         
         # Plot
         scatter = plt.scatter(tsne_results[:, 0], tsne_results[:, 1], 
