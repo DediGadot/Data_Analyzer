@@ -52,11 +52,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class PerformanceMonitor:
-    """Monitor and log performance metrics"""
+    """Monitor and log performance metrics including CPU usage"""
     def __init__(self):
         self.process = psutil.Process()
         self.start_time = time.time()
         self.metrics = {}
+        self.cpu_samples = []  # Store CPU usage samples
+        self.monitoring_active = False
     
     def log_memory(self, step: str):
         """Log memory usage for a step"""
@@ -76,6 +78,69 @@ class PerformanceMonitor:
         self.metrics[f"{step}_seconds"] = elapsed
         logger.info(f"{step} completed in {elapsed:.2f} seconds")
         return elapsed
+    
+    def start_cpu_monitoring(self, step: str):
+        """Start monitoring CPU usage for a step"""
+        self.monitoring_active = True
+        cpu_usage = psutil.cpu_percent(interval=1, percpu=True)  # Per-core usage
+        total_cpu = psutil.cpu_percent(interval=None)
+        
+        self.cpu_samples.append({
+            'step': step,
+            'timestamp': time.time(),
+            'total_cpu_percent': total_cpu,
+            'per_core_cpu_percent': cpu_usage,
+            'active_cores': sum(1 for usage in cpu_usage if usage > 10),  # Cores with >10% usage
+            'max_core_usage': max(cpu_usage) if cpu_usage else 0
+        })
+        
+        logger.info(f"CPU monitoring started for {step}: {total_cpu:.1f}% total, {len([u for u in cpu_usage if u > 10])}/{len(cpu_usage)} cores active")
+    
+    def log_cpu_usage(self, step: str):
+        """Log current CPU usage for a step"""
+        cpu_usage = psutil.cpu_percent(interval=1, percpu=True)
+        total_cpu = psutil.cpu_percent(interval=None)
+        active_cores = sum(1 for usage in cpu_usage if usage > 10)
+        
+        self.cpu_samples.append({
+            'step': step,
+            'timestamp': time.time(),
+            'total_cpu_percent': total_cpu,
+            'per_core_cpu_percent': cpu_usage,
+            'active_cores': active_cores,
+            'max_core_usage': max(cpu_usage) if cpu_usage else 0
+        })
+        
+        self.metrics[f"{step}_cpu_percent"] = total_cpu
+        self.metrics[f"{step}_active_cores"] = active_cores
+        self.metrics[f"{step}_max_core_usage"] = max(cpu_usage) if cpu_usage else 0
+        
+        logger.info(f"CPU usage for {step}: {total_cpu:.1f}% total, {active_cores}/{len(cpu_usage)} cores active, max core: {max(cpu_usage):.1f}%")
+        
+        # Warn if not using all cores effectively
+        if active_cores < len(cpu_usage) * 0.75:  # If less than 75% of cores are active
+            logger.warning(f"Low core utilization for {step}: only {active_cores}/{len(cpu_usage)} cores active")
+    
+    def get_cpu_summary(self) -> Dict[str, Any]:
+        """Get CPU usage summary across all monitoring periods"""
+        if not self.cpu_samples:
+            return {}
+        
+        total_cpu_avg = np.mean([sample['total_cpu_percent'] for sample in self.cpu_samples])
+        max_cpu = max([sample['total_cpu_percent'] for sample in self.cpu_samples])
+        avg_active_cores = np.mean([sample['active_cores'] for sample in self.cpu_samples])
+        max_active_cores = max([sample['active_cores'] for sample in self.cpu_samples])
+        total_cores = len(self.cpu_samples[0]['per_core_cpu_percent']) if self.cpu_samples else 0
+        
+        return {
+            'average_cpu_percent': total_cpu_avg,
+            'peak_cpu_percent': max_cpu,
+            'average_active_cores': avg_active_cores,
+            'max_active_cores': max_active_cores,
+            'total_cores': total_cores,
+            'core_utilization_ratio': avg_active_cores / max(total_cores, 1),
+            'samples_count': len(self.cpu_samples)
+        }
 
 class ProgressTracker:
     """Comprehensive progress tracking with nested progress bars"""
@@ -669,11 +734,16 @@ class OptimizedFraudDetectionPipeline:
             logger.info("Step 2: Engineering features in parallel...")
             step_start = time.time()
             
+            # Monitor CPU usage during feature engineering
+            self.monitor.start_cpu_monitoring("feature_engineering")
+            
             features_df = self.feature_engineer.create_features_parallel(df, progress_tracker=self.progress_tracker)
             
             # Create channel features efficiently
             channel_features = self._create_channel_features_fast(features_df)
             
+            # Log CPU usage for feature engineering
+            self.monitor.log_cpu_usage("feature_engineering")
             self.monitor.log_memory("feature_engineering")
             self.monitor.log_time("feature_engineering", step_start)
             self.progress_tracker.complete_step("Feature Engineering")
@@ -721,17 +791,22 @@ class OptimizedFraudDetectionPipeline:
                 'approximate_mode': self.approximate
             }
             
-            # Step 5: Anomaly Detection with Sampling
-            logger.info("Step 5: Detecting anomalies...")
+            # Step 5: Anomaly Detection with Parallel Processing
+            logger.info("Step 5: Detecting anomalies with PARALLEL processing...")
             step_start = time.time()
             
+            # Monitor CPU usage during anomaly detection (the critical parallel step)
+            self.monitor.start_cpu_monitoring("anomaly_detection")
+            
             # Create progress bar for anomaly detection steps
-            with self.progress_tracker.step_progress_bar("Anomaly Detection", total=100, desc="Running optimized anomaly detection") as pbar:
+            with self.progress_tracker.step_progress_bar("Anomaly Detection", total=100, desc="Running PARALLEL anomaly detection") as pbar:
                 anomaly_results = self.anomaly_detector.run_comprehensive_anomaly_detection(
                     features_df,
                     progress_bar=pbar
                 )
             
+            # Log CPU usage for anomaly detection (should show high multi-core usage)
+            self.monitor.log_cpu_usage("anomaly_detection")
             self.monitor.log_memory("anomaly_detection")
             self.monitor.log_time("anomaly_detection", step_start)
             self.progress_tracker.complete_step("Anomaly Detection")
@@ -763,9 +838,10 @@ class OptimizedFraudDetectionPipeline:
             self._generate_final_results(quality_results_df, {}, anomaly_results)
             self.progress_tracker.complete_step("Result Generation")
             
-            # Pipeline summary
+            # Pipeline summary with CPU monitoring results
             total_time = time.time() - pipeline_start_time
             peak_memory = max(v for k, v in self.monitor.metrics.items() if 'memory' in k)
+            cpu_summary = self.monitor.get_cpu_summary()
             
             self.pipeline_results['pipeline_summary'] = {
                 'total_processing_time_seconds': total_time,
@@ -775,7 +851,8 @@ class OptimizedFraudDetectionPipeline:
                 'peak_memory_mb': peak_memory,
                 'cpu_cores_used': self.n_jobs,
                 'approximate_mode': self.approximate,
-                'completion_status': 'SUCCESS'
+                'completion_status': 'SUCCESS',
+                'cpu_monitoring': cpu_summary
             }
             
             # Step 8: Generate Reports
@@ -794,6 +871,23 @@ class OptimizedFraudDetectionPipeline:
             logger.info(f"Processing speed: {len(features_df)/total_time:.0f} records/second")
             logger.info(f"Peak memory: {peak_memory:.2f} MB")
             logger.info(f"PDF Report: {pdf_report_path}")
+            
+            # Log CPU utilization summary
+            if cpu_summary:
+                logger.info("CPU UTILIZATION SUMMARY:")
+                logger.info(f"  Average CPU usage: {cpu_summary['average_cpu_percent']:.1f}%")
+                logger.info(f"  Peak CPU usage: {cpu_summary['peak_cpu_percent']:.1f}%")
+                logger.info(f"  Average active cores: {cpu_summary['average_active_cores']:.1f}/{cpu_summary['total_cores']}")
+                logger.info(f"  Core utilization ratio: {cpu_summary['core_utilization_ratio']*100:.1f}%")
+                
+                # Performance assessment
+                if cpu_summary['core_utilization_ratio'] >= 0.75:
+                    logger.info("✅ EXCELLENT: High multi-core utilization achieved!")
+                elif cpu_summary['core_utilization_ratio'] >= 0.5:
+                    logger.info("⚠️  GOOD: Moderate multi-core utilization")
+                else:
+                    logger.info("❌ POOR: Low multi-core utilization - parallelism not effective")
+            
             logger.info("=" * 60)
             
             # Add progress summary to results
