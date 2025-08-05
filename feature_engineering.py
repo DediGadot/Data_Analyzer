@@ -359,17 +359,20 @@ class FeatureEngineer:
     def _check_browser_version_consistency(self, df: pd.DataFrame) -> pd.Series:
         """Check consistency between browser and browserMajorVersion."""
         if 'browser' not in df.columns or 'browserMajorVersion' not in df.columns:
-            return pd.Series([1] * len(df))
+            return pd.Series([1] * len(df), index=df.index)
         
         # This is a simplified check - in production, you'd have a comprehensive mapping
-        consistency = pd.Series([1] * len(df))
+        # IMPORTANT: Preserve the DataFrame's index to avoid boolean indexing issues
+        consistency = pd.Series([1] * len(df), index=df.index)
         
         # Check for obvious inconsistencies
         chrome_mask = df['browser'] == 'chrome'
         if chrome_mask.any():
             # Chrome versions should be reasonable (e.g., 70-120)
-            consistency.loc[chrome_mask & ((df['browserMajorVersion'] < 70) | 
-                                         (df['browserMajorVersion'] > 130))] = 0
+            # Use .loc with proper boolean indexing that respects the index
+            version_mask = ((df['browserMajorVersion'] < 70) | (df['browserMajorVersion'] > 130))
+            combined_mask = chrome_mask & version_mask
+            consistency.loc[combined_mask] = 0
         
         return consistency
     
