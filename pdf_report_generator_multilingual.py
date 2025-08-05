@@ -551,11 +551,11 @@ class MultilingualPDFReportGenerator:
         plt.xscale('log')
         
         if lang == 'he':
-            plt.xlabel('נפח תעבורה (סולם לוגריתמי)', fontsize=12)
-            plt.ylabel('ציון איכות', fontsize=12)
-            plt.title('ציון איכות מול נפח תעבורה', fontsize=14, fontweight='bold')
+            plt.xlabel(self._process_hebrew_text('נפח תעבורה (סולם לוגריתמי)'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('ציון איכות'), fontsize=12)
+            plt.title(self._process_hebrew_text('ציון איכות מול נפח תעבורה'), fontsize=14, fontweight='bold')
             cbar = plt.colorbar(scatter)
-            cbar.set_label('שיעור בוטים', fontsize=10)
+            cbar.set_label(self._process_hebrew_text('שיעור בוטים'), fontsize=10)
         else:
             plt.xlabel('Traffic Volume (log scale)', fontsize=12)
             plt.ylabel('Quality Score', fontsize=12)
@@ -632,14 +632,14 @@ class MultilingualPDFReportGenerator:
         
         # Set labels based on language
         if lang == 'he':
-            plt.xlabel('קטגוריית איכות', fontsize=12)
-            plt.ylabel('שיעור בוטים', fontsize=12)
-            plt.title('התפלגות שיעור בוטים לפי קטגוריית איכות', fontsize=14, fontweight='bold')
+            plt.xlabel(self._process_hebrew_text('קטגוריית איכות'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('שיעור בוטים'), fontsize=12)
+            plt.title(self._process_hebrew_text('התפלגות שיעור בוטים לפי קטגוריית איכות'), fontsize=14, fontweight='bold')
             plt.suptitle('')  # Remove default title
             # Update x-axis labels for Hebrew only if they match the expected structure
             ax = plt.gca()
             current_labels = ax.get_xticklabels()
-            hebrew_labels = ['נמוך', 'בינוני-נמוך', 'בינוני-גבוה', 'גבוה']
+            hebrew_labels = [self._process_hebrew_text('נמוך'), self._process_hebrew_text('בינוני-נמוך'), self._process_hebrew_text('בינוני-גבוה'), self._process_hebrew_text('גבוה')]
             
             # Only set Hebrew labels if the count matches
             if len(current_labels) <= len(hebrew_labels):
@@ -740,9 +740,9 @@ class MultilingualPDFReportGenerator:
         
         # Set labels based on language
         if lang == 'he':
-            plt.xlabel('נפח תעבורה', fontsize=12)
-            plt.ylabel('שיעור בוטים', fontsize=12)
-            plt.title('מטריצת הערכת סיכונים', fontsize=14, fontweight='bold')
+            plt.xlabel(self._process_hebrew_text('נפח תעבורה'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('שיעור בוטים'), fontsize=12)
+            plt.title(self._process_hebrew_text('מטריצת הערכת סיכונים'), fontsize=14, fontweight='bold')
             # Update labels for Hebrew only if they match the actual data structure
             ax = plt.gca()
             current_xlabels = ax.get_xticklabels()
@@ -806,9 +806,9 @@ class MultilingualPDFReportGenerator:
         
         # Set labels based on language
         if lang == 'he':
-            plt.xlabel('סוג חריגה', fontsize=12)
-            plt.ylabel('מזהה ערוץ', fontsize=12)
-            plt.title('מפת חום זיהוי חריגות - 20 הערוצים החריגים ביותר', fontsize=14, fontweight='bold')
+            plt.xlabel(self._process_hebrew_text('סוג חריגה'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('מזהה ערוץ'), fontsize=12)
+            plt.title(self._process_hebrew_text('מפת חום זיהוי חריגות - 20 הערוצים החריגים ביותר'), fontsize=14, fontweight='bold')
         else:
             plt.xlabel('Anomaly Type', fontsize=12)
             plt.ylabel('Channel ID', fontsize=12)
@@ -855,9 +855,9 @@ class MultilingualPDFReportGenerator:
         
         # Set labels based on language
         if lang == 'he':
-            plt.xlabel('סוג חריגה', fontsize=12)
-            plt.ylabel('מספר ערוצים', fontsize=12)
-            plt.title('התפלגות סוגי חריגות', fontsize=14, fontweight='bold')
+            plt.xlabel(self._process_hebrew_text('סוג חריגה'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('מספר ערוצים'), fontsize=12)
+            plt.title(self._process_hebrew_text('התפלגות סוגי חריגות'), fontsize=14, fontweight='bold')
         else:
             plt.xlabel('Anomaly Type', fontsize=12)
             plt.ylabel('Number of Channels', fontsize=12)
@@ -935,11 +935,11 @@ class MultilingualPDFReportGenerator:
         
         # Set labels based on language
         if lang == 'he':
-            plt.xlabel('t-SNE מימד 1', fontsize=12)
-            plt.ylabel('t-SNE מימד 2', fontsize=12)
-            plt.title('אשכולות דפוסי תעבורה', fontsize=14, fontweight='bold')
+            plt.xlabel(self._process_hebrew_text('t-SNE מימד 1'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('t-SNE מימד 2'), fontsize=12)
+            plt.title(self._process_hebrew_text('אשכולות דפוסי תעבורה'), fontsize=14, fontweight='bold')
             cbar = plt.colorbar(scatter)
-            cbar.set_label('אשכול', fontsize=10)
+            cbar.set_label(self._process_hebrew_text('אשכול'), fontsize=10)
         else:
             plt.xlabel('t-SNE Dimension 1', fontsize=12)
             plt.ylabel('t-SNE Dimension 2', fontsize=12)
@@ -1015,9 +1015,9 @@ class MultilingualPDFReportGenerator:
         
         # Set labels based on language
         if lang == 'he':
-            plt.xlabel('אשכול', fontsize=12)
-            plt.ylabel('ציון איכות ממוצע', fontsize=12)
-            plt.title('ציון איכות ממוצע לפי אשכול', fontsize=14, fontweight='bold')
+            plt.xlabel(self._process_hebrew_text('אשכול'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('ציון איכות ממוצע'), fontsize=12)
+            plt.title(self._process_hebrew_text('ציון איכות ממוצע לפי אשכול'), fontsize=14, fontweight='bold')
         else:
             plt.xlabel('Cluster', fontsize=12)
             plt.ylabel('Average Quality Score', fontsize=12)
@@ -1070,10 +1070,10 @@ class MultilingualPDFReportGenerator:
         
         # Set labels based on language
         if lang == 'he':
-            plt.xlabel('תקופה', fontsize=12)
-            plt.ylabel('ציון איכות', fontsize=12)
-            plt.title('מגמת ציון איכות לאורך זמן', fontsize=14, fontweight='bold')
-            plt.legend(['ציון ממוצע', 'סטיית תקן'])
+            plt.xlabel(self._process_hebrew_text('תקופה'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('ציון איכות'), fontsize=12)
+            plt.title(self._process_hebrew_text('מגמת ציון איכות לאורך זמן'), fontsize=14, fontweight='bold')
+            plt.legend([self._process_hebrew_text('ציון ממוצע'), self._process_hebrew_text('סטיית תקן')])
         else:
             plt.xlabel('Time Period', fontsize=12)
             plt.ylabel('Quality Score', fontsize=12)
@@ -1135,7 +1135,7 @@ class MultilingualPDFReportGenerator:
         
         # Set title based on language
         if lang == 'he':
-            plt.title('התפלגות סוגי הונאה שזוהו', fontsize=14, fontweight='bold', pad=20)
+            plt.title(self._process_hebrew_text('התפלגות סוגי הונאה שזוהו'), fontsize=14, fontweight='bold', pad=20)
         else:
             plt.title('Detected Fraud Type Distribution', fontsize=14, fontweight='bold', pad=20)
         
