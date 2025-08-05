@@ -31,14 +31,14 @@ print(f"Unique bot rates: {quality_df['bot_rate'].nunique()}")
 print(f"Unique volumes: {quality_df['volume'].nunique()}")
 print("This data would have caused 'bins must increase monotonically' errors in the original code.")
 
-# Create sample anomaly data
+# Create sample anomaly data (matching small dataset size)
 anomaly_df = pd.DataFrame({
-    'channelId': quality_df['channelId'].sample(500),
-    'temporal_anomaly': np.random.choice([True, False], 500, p=[0.3, 0.7]),
-    'geographic_anomaly': np.random.choice([True, False], 500, p=[0.2, 0.8]),
-    'volume_anomaly': np.random.choice([True, False], 500, p=[0.15, 0.85]),
-    'device_anomaly': np.random.choice([True, False], 500, p=[0.25, 0.75]),
-    'behavioral_anomaly': np.random.choice([True, False], 500, p=[0.2, 0.8])
+    'channelId': quality_df['channelId'],  # Use all channels from small dataset
+    'temporal_anomaly': [True, False, True, False, True],
+    'geographic_anomaly': [False, True, False, True, False],
+    'volume_anomaly': [True, True, False, False, False],
+    'device_anomaly': [False, False, True, True, True],
+    'behavioral_anomaly': [True, False, False, True, False]
 })
 
 # Calculate overall anomaly count
