@@ -326,15 +326,15 @@ class MultilingualPDFReportGenerator:
             # Add font to matplotlib's font manager
             fm.fontManager.addfont(font_path)
             
-            # Configure matplotlib to use fonts that actually exist on the system
-            # Remove 'Arial Unicode MS' which doesn't exist and causes warnings
-            plt.rcParams['font.family'] = ['DejaVu Sans', 'Noto Sans Hebrew', 'Arial']
-            plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Noto Sans Hebrew', 'Arial']
+            # Configure matplotlib to use only fonts that are actually available
+            # DejaVu Sans has good Unicode support including Hebrew characters
+            plt.rcParams['font.family'] = ['DejaVu Sans']
+            plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
             
             # Ensure proper UTF-8 handling
             plt.rcParams['axes.unicode_minus'] = False
             
-            logging.getLogger(__name__).info("Matplotlib configured for Hebrew text with available fonts")
+            logging.getLogger(__name__).info("Matplotlib configured for Hebrew text using DejaVu Sans")
         except Exception as e:
             logging.getLogger(__name__).warning(f"Failed to configure matplotlib for Hebrew: {e}")
     
