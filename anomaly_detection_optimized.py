@@ -334,7 +334,11 @@ class OptimizedAnomalyDetector:
         )
         iso_anomalies = iso_forest.fit_predict(features_scaled) == -1
         
-        elliptic = EllipticEnvelope(contamination=self.contamination, random_state=self.random_state)
+        elliptic = EllipticEnvelope(
+            contamination=self.contamination, 
+            random_state=self.random_state
+            # Note: EllipticEnvelope doesn't support n_jobs parameter
+        )
         elliptic_anomalies = elliptic.fit_predict(features_scaled) == -1
         
         svm = OneClassSVM(nu=self.contamination)
