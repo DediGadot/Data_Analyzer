@@ -657,11 +657,13 @@ class OptimizedFraudDetectionPipeline:
             
             anomaly_results = self.anomaly_detector.detect_anomalies_fast(
                 features_df, 
-                sample_fraction=0.2 if self.approximate else 1.0
+                sample_fraction=0.2 if self.approximate else 1.0,
+                progress_tracker=self.progress_tracker
             )
             
             self.monitor.log_memory("anomaly_detection")
             self.monitor.log_time("anomaly_detection", step_start)
+            self.progress_tracker.complete_step("Anomaly Detection")
             
             self.pipeline_results['anomaly_detection'] = {
                 'entities_analyzed': len(anomaly_results),
