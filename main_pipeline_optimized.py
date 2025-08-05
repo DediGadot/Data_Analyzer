@@ -3,6 +3,13 @@ Optimized ML Pipeline for Fraud Detection with Parallel Processing
 Achieves <1 hour processing for 1.48M records on 4 cores with 7.8GB RAM
 """
 
+# Configure parallelism environment variables
+import os
+os.environ['OMP_NUM_THREADS'] = '4'
+os.environ['MKL_NUM_THREADS'] = '4'
+os.environ['NUMBA_NUM_THREADS'] = '4'
+os.environ['OPENBLAS_NUM_THREADS'] = '4'
+
 import pandas as pd
 import numpy as np
 import logging
