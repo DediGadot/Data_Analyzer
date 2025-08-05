@@ -1082,11 +1082,13 @@ class OptimizedFraudDetectionPipeline:
     def _generate_results_markdown(self, quality_results: pd.DataFrame,
                                  cluster_profiles: Dict,
                                  anomaly_results: pd.DataFrame):
-        """Generate comprehensive RESULTS.md file"""
-        # Use base implementation
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        md_content = f"""# Fraud Detection ML Pipeline Results (Optimized)
+        """Generate comprehensive RESULTS.md file with progress tracking"""
+        with self.progress_tracker.step_progress_bar("Report Generation", total=3, desc="Generating markdown report") as pbar:
+            # Use base implementation
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            pbar.update(1)
+            
+            md_content = f"""# Fraud Detection ML Pipeline Results (Optimized)
 
 Generated: {timestamp}
 Mode: {'Approximate (Fast)' if self.approximate else 'Full Precision'}
@@ -1116,14 +1118,14 @@ Processing Speed: {self.pipeline_results['pipeline_summary'].get('records_per_se
 | Anomaly Detection | {self.monitor.metrics.get('anomaly_detection_seconds', 0):.1f} | {self.monitor.metrics.get('anomaly_detection_memory_mb', 0):.1f} |
 
 """
-        
-        # Add more content as needed...
-        
-        # Save the markdown file
-        results_path = os.path.join(self.output_dir, "RESULTS_OPTIMIZED.md")
-        with open(results_path, 'w', encoding='utf-8') as f:
-            f.write(md_content)
-        
+            pbar.update(1)
+            
+            # Save the markdown file
+            results_path = os.path.join(self.output_dir, "RESULTS_OPTIMIZED.md")
+            with open(results_path, 'w', encoding='utf-8') as f:
+                f.write(md_content)
+            pbar.update(1)
+            
         logger.info(f"Results report saved to {results_path}")
     
     def _generate_pdf_report(self, quality_results: pd.DataFrame,
