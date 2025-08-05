@@ -639,10 +639,11 @@ class OptimizedFraudDetectionPipeline:
             logger.info("Step 4: Computing traffic similarity...")
             step_start = time.time()
             
-            similarity_results = self.similarity_model.compute_similarity_fast(channel_features)
+            similarity_results = self.similarity_model.compute_similarity_fast(channel_features, progress_tracker=self.progress_tracker)
             
             self.monitor.log_memory("traffic_similarity")
             self.monitor.log_time("traffic_similarity", step_start)
+            self.progress_tracker.complete_step("Traffic Similarity")
             
             self.pipeline_results['traffic_similarity'] = {
                 'similarity_results': similarity_results,
