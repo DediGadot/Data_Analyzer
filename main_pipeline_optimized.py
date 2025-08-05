@@ -682,8 +682,10 @@ class OptimizedFraudDetectionPipeline:
                 
                 self.pipeline_results['model_evaluation'] = evaluation_results
                 self.monitor.log_time("model_evaluation", step_start)
+                self.progress_tracker.complete_step("Model Evaluation")
             else:
                 logger.info("Step 6: Skipping detailed evaluation in approximate mode")
+                self.progress_tracker.complete_step("Model Evaluation")
             
             # Step 7: Generate Results
             logger.info("Step 7: Generating final results...")
