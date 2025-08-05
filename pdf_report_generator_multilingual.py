@@ -460,11 +460,15 @@ class MultilingualPDFReportGenerator:
             story.append(Spacer(1, 0.2 * inch))
             
             if desc['what']:
-                story.append(Paragraph(f"<b>{self.t('what_shows', lang)}</b> {desc['what']}", 
+                what_label = self._process_hebrew_text(self.t('what_shows', lang)) if lang == 'he' else self.t('what_shows', lang)
+                what_text = self._process_hebrew_text(desc['what']) if lang == 'he' else desc['what']
+                story.append(Paragraph(f"<b>{what_label}</b> {what_text}", 
                                      styles['Description']))
             
             if desc['how']:
-                story.append(Paragraph(f"<b>{self.t('how_interpret', lang)}</b> {desc['how']}", 
+                how_label = self._process_hebrew_text(self.t('how_interpret', lang)) if lang == 'he' else self.t('how_interpret', lang)
+                how_text = self._process_hebrew_text(desc['how']) if lang == 'he' else desc['how']
+                story.append(Paragraph(f"<b>{how_label}</b> {how_text}", 
                                      styles['Description']))
             
             story.append(Spacer(1, 0.3 * inch))
@@ -499,7 +503,7 @@ class MultilingualPDFReportGenerator:
             plt.bar(range(len(value_counts)), value_counts.values, color='#1f77b4', alpha=0.7)
             plt.xticks(range(len(value_counts)), [f'{v:.2f}' for v in value_counts.index])
             if lang == 'he':
-                plt.xlabel('ערכי ציון איכות', fontsize=12)
+                plt.xlabel(self._process_hebrew_text('ערכי ציון איכות'), fontsize=12)
             else:
                 plt.xlabel('Quality Score Values', fontsize=12)
         
@@ -734,9 +738,10 @@ class MultilingualPDFReportGenerator:
             
             risk_matrix = pd.crosstab(df_temp['bot_rate_bin'], df_temp['volume_bin'])
         
-        # Create heatmap
+        # Create heatmap  
+        cbar_label = self._process_hebrew_text(self.t('channel_id', lang)) if lang == 'he' else 'Channel Count'
         sns.heatmap(risk_matrix, annot=True, fmt='d', cmap='YlOrRd', 
-                   cbar_kws={'label': self.t('channel_id', lang) if lang == 'he' else 'Channel Count'})
+                   cbar_kws={'label': cbar_label})
         
         # Set labels based on language
         if lang == 'he':
@@ -802,7 +807,8 @@ class MultilingualPDFReportGenerator:
         anomaly_matrix = top_anomalous[anomaly_cols].astype(int)
         
         # Create heatmap
-        sns.heatmap(anomaly_matrix, cmap='RdYlGn_r', cbar_kws={'label': self.t('anomaly_count', lang) if lang == 'he' else 'Anomaly Present'})
+        cbar_label = self._process_hebrew_text(self.t('anomaly_count', lang)) if lang == 'he' else 'Anomaly Present'
+        sns.heatmap(anomaly_matrix, cmap='RdYlGn_r', cbar_kws={'label': cbar_label})
         
         # Set labels based on language
         if lang == 'he':
@@ -1062,7 +1068,8 @@ class MultilingualPDFReportGenerator:
         
         # Plot trend with confidence interval
         x = range(len(trend_data))
-        plt.plot(x, trend_data['mean'], 'b-', linewidth=2, label=self.t('avg_quality', lang) if lang == 'he' else 'Average Quality')
+        avg_label = self._process_hebrew_text(self.t('avg_quality', lang)) if lang == 'he' else 'Average Quality'
+        plt.plot(x, trend_data['mean'], 'b-', linewidth=2, label=avg_label)
         plt.fill_between(x, 
                         trend_data['mean'] - trend_data['std'], 
                         trend_data['mean'] + trend_data['std'], 
