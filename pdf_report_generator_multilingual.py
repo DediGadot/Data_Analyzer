@@ -66,6 +66,9 @@ class MultilingualPDFReportGenerator:
         # Hebrew font availability
         self.hebrew_font_available = False
         
+        # Initialize Hebrew font support after languages dict is created
+        self._setup_hebrew_fonts()
+        
         # Translations
         self.translations = {
             'en': {
