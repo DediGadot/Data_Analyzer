@@ -623,10 +623,11 @@ class OptimizedFraudDetectionPipeline:
             logger.info("Step 3: Training quality scoring model with batching...")
             step_start = time.time()
             
-            quality_results_df = self.quality_scorer.score_channels_fast(features_df)
+            quality_results_df = self.quality_scorer.score_channels_fast(features_df, progress_tracker=self.progress_tracker)
             
             self.monitor.log_memory("quality_scoring")
             self.monitor.log_time("quality_scoring", step_start)
+            self.progress_tracker.complete_step("Quality Scoring")
             
             self.pipeline_results['quality_scoring'] = {
                 'channels_scored': len(quality_results_df),
