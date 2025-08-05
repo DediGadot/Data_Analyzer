@@ -6,6 +6,7 @@ Supports both English and Hebrew languages with proper RTL layout
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import seaborn as sns
 import pandas as pd
 import numpy as np
@@ -26,9 +27,13 @@ from typing import Dict, List, Optional, Tuple
 import warnings
 warnings.filterwarnings('ignore')
 
-# Configure matplotlib for better font handling
-plt.rcParams['font.family'] = 'DejaVu Sans'
-plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
+# Import RTL support
+try:
+    from bidi.algorithm import get_display
+    HAS_BIDI = True
+except ImportError:
+    HAS_BIDI = False
+    logging.warning("python-bidi not available, RTL text may not display correctly")
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +47,9 @@ class MultilingualPDFReportGenerator:
         self.figures_dir = os.path.join(output_dir, "report_figures")
         os.makedirs(self.figures_dir, exist_ok=True)
         
+        # Initialize Hebrew font support
+        self._setup_hebrew_fonts()
+        
         # Language-specific configurations
         self.languages = {
             'en': {
@@ -54,9 +62,12 @@ class MultilingualPDFReportGenerator:
                 'name': 'Hebrew',
                 'direction': 'rtl',
                 'alignment': TA_RIGHT,
-                'font': 'Helvetica'  # Will use DejaVu for Hebrew characters
+                'font': 'NotoSansHebrew'  # Use proper Hebrew font
             }
         }
+        
+        # Hebrew font availability
+        self.hebrew_font_available = False
         
         # Translations
         self.translations = {
@@ -260,9 +271,91 @@ class MultilingualPDFReportGenerator:
             }
         }
     
+    def _setup_hebrew_fonts(self):
+        """Setup Hebrew fonts for both ReportLab and matplotlib."""
+        logger = logging.getLogger(__name__)
+        
+        # Try to register Hebrew fonts with ReportLab
+        hebrew_font_paths = [
+            '/home/fiod/shimshi/fonts/NotoSansHebrew.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+        ]
+        
+        for font_path in hebrew_font_paths:
+            if os.path.exists(font_path):
+                try:
+                    # Register with ReportLab
+                    pdfmetrics.registerFont(TTFont('NotoSansHebrew', font_path))
+                    pdfmetrics.registerFont(TTFont('NotoSansHebrew-Bold', font_path))
+                    self.hebrew_font_available = True
+                    logger.info(f"Registered Hebrew font: {font_path}")
+                    
+                    # Configure matplotlib to use this font for Hebrew
+                    self._setup_matplotlib_hebrew_font(font_path)
+                    break
+                except Exception as e:
+                    logger.warning(f"Failed to register font {font_path}: {e}")
+                    continue
+        
+        if not self.hebrew_font_available:
+            logger.warning("No Hebrew fonts found, falling back to DejaVu Sans")
+            # Fallback to DejaVu Sans which has some Hebrew support
+            try:
+                dejavu_paths = [
+                    '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+                    '/System/Library/Fonts/DejaVuSans.ttf'
+                ]
+                for path in dejavu_paths:
+                    if os.path.exists(path):
+                        pdfmetrics.registerFont(TTFont('NotoSansHebrew', path))
+                        pdfmetrics.registerFont(TTFont('NotoSansHebrew-Bold', path))
+                        self.hebrew_font_available = True
+                        logger.info(f"Using DejaVu Sans for Hebrew: {path}")
+                        break
+            except Exception as e:
+                logger.error(f"Failed to setup fallback font: {e}")
+                # Ultimate fallback - use system default
+                self.languages['he']['font'] = 'Helvetica'
+    
+    def _setup_matplotlib_hebrew_font(self, font_path: str):
+        """Configure matplotlib to use Hebrew font."""
+        try:
+            # Add font to matplotlib's font manager
+            fm.fontManager.addfont(font_path)
+            
+            # Configure matplotlib to use fonts that support Hebrew
+            plt.rcParams['font.family'] = ['DejaVu Sans', 'Noto Sans Hebrew', 'Arial Unicode MS']
+            plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Noto Sans Hebrew', 'Arial Unicode MS']
+            
+            # Ensure proper UTF-8 handling
+            plt.rcParams['axes.unicode_minus'] = False
+            
+            logging.getLogger(__name__).info("Matplotlib configured for Hebrew text")
+        except Exception as e:
+            logging.getLogger(__name__).warning(f"Failed to configure matplotlib for Hebrew: {e}")
+    
+    def _process_hebrew_text(self, text: str) -> str:
+        """Process Hebrew text for proper RTL display."""
+        if not text or not HAS_BIDI:
+            return text
+        
+        try:
+            # Check if text contains Hebrew characters
+            if any('\u0590' <= char <= '\u05FF' or '\uFB1D' <= char <= '\uFB4F' for char in text):
+                # Apply RTL processing
+                return get_display(text)
+            return text
+        except Exception as e:
+            logging.getLogger(__name__).warning(f"Failed to process Hebrew text: {e}")
+            return text
+    
     def t(self, key: str, lang: str) -> str:
-        """Get translation for a key in specified language."""
-        return self.translations.get(lang, self.translations['en']).get(key, key)
+        """Get translation for a key in specified language with proper RTL processing."""
+        text = self.translations.get(lang, self.translations['en']).get(key, key)
+        if lang == 'he':
+            text = self._process_hebrew_text(text)
+        return text
     
     def get_plot_description(self, plot_key: str, lang: str) -> Dict[str, str]:
         """Get plot description in specified language."""
@@ -287,6 +380,11 @@ class MultilingualPDFReportGenerator:
             normal_align = TA_LEFT
             heading_align = TA_LEFT
         
+        # Get appropriate font name
+        font_name = self.languages[lang]['font']
+        if lang == 'he' and not self.hebrew_font_available:
+            font_name = 'Helvetica'
+            
         # Title style
         styles.add(ParagraphStyle(
             name='CustomTitle',
@@ -295,7 +393,7 @@ class MultilingualPDFReportGenerator:
             textColor=colors.HexColor('#1f77b4'),
             spaceAfter=30,
             alignment=title_align,
-            fontName=self.languages[lang]['font']
+            fontName=font_name
         ))
         
         # Subtitle style
@@ -306,7 +404,7 @@ class MultilingualPDFReportGenerator:
             textColor=colors.HexColor('#666666'),
             spaceAfter=20,
             alignment=title_align,
-            fontName=self.languages[lang]['font']
+            fontName=font_name
         ))
         
         # Section heading style
@@ -318,7 +416,7 @@ class MultilingualPDFReportGenerator:
             spaceAfter=12,
             spaceBefore=20,
             alignment=heading_align,
-            fontName=self.languages[lang]['font']
+            fontName=font_name
         ))
         
         # Subsection heading style
@@ -330,7 +428,7 @@ class MultilingualPDFReportGenerator:
             spaceAfter=10,
             spaceBefore=15,
             alignment=heading_align,
-            fontName=self.languages[lang]['font']
+            fontName=font_name
         ))
         
         # Normal text style
@@ -339,7 +437,7 @@ class MultilingualPDFReportGenerator:
             parent=styles['Normal'],
             fontSize=10,
             alignment=normal_align,
-            fontName=self.languages[lang]['font']
+            fontName=font_name
         ))
         
         # Description style
@@ -349,7 +447,7 @@ class MultilingualPDFReportGenerator:
             fontSize=9,
             textColor=colors.HexColor('#555555'),
             alignment=normal_align,
-            fontName=self.languages[lang]['font'],
+            fontName=font_name,
             spaceAfter=6
         ))
         
@@ -405,11 +503,11 @@ class MultilingualPDFReportGenerator:
             else:
                 plt.xlabel('Quality Score Values', fontsize=12)
         
-        # Set labels based on language
+        # Set labels based on language with proper Hebrew support
         if lang == 'he':
-            plt.xlabel('ציון איכות', fontsize=12)
-            plt.ylabel('מספר ערוצים', fontsize=12)
-            plt.title('התפלגות ציוני איכות ערוצים', fontsize=14, fontweight='bold')
+            plt.xlabel(self._process_hebrew_text('ציון איכות'), fontsize=12)
+            plt.ylabel(self._process_hebrew_text('מספר ערוצים'), fontsize=12)
+            plt.title(self._process_hebrew_text('התפלגות ציוני איכות ערוצים'), fontsize=14, fontweight='bold')
         else:
             plt.xlabel('Quality Score', fontsize=12)
             plt.ylabel('Number of Channels', fontsize=12)
@@ -422,7 +520,7 @@ class MultilingualPDFReportGenerator:
         median_score = df['quality_score'].median()
         
         if lang == 'he':
-            stats_text = f'ממוצע: {mean_score:.2f}\nחציון: {median_score:.2f}'
+            stats_text = self._process_hebrew_text(f'ממוצע: {mean_score:.2f}\nחציון: {median_score:.2f}')
         else:
             stats_text = f'Mean: {mean_score:.2f}\nMedian: {median_score:.2f}'
         
