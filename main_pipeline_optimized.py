@@ -77,6 +77,139 @@ class PerformanceMonitor:
         logger.info(f"{step} completed in {elapsed:.2f} seconds")
         return elapsed
 
+class ProgressTracker:
+    """Comprehensive progress tracking with nested progress bars"""
+    
+    def __init__(self):
+        self.main_bar = None
+        self.nested_bars = {}
+        self.pipeline_steps = [
+            "Data Loading",
+            "Feature Engineering", 
+            "Quality Scoring",
+            "Traffic Similarity",
+            "Anomaly Detection",
+            "Model Evaluation",
+            "Result Generation",
+            "Report Generation",
+            "PDF Generation"
+        ]
+        self.step_weights = {
+            "Data Loading": 15,
+            "Feature Engineering": 25,
+            "Quality Scoring": 20,
+            "Traffic Similarity": 10,
+            "Anomaly Detection": 15,
+            "Model Evaluation": 5,
+            "Result Generation": 5,
+            "Report Generation": 3,
+            "PDF Generation": 2
+        }
+        self.current_step = 0
+        self.step_progress = {}
+        self._lock = threading.Lock()
+    
+    def initialize_main_progress(self, total_records: int = None):
+        """Initialize the main pipeline progress bar"""
+        desc = f"ML Pipeline Progress ({total_records:,} records)" if total_records else "ML Pipeline Progress"
+        self.main_bar = tqdm(
+            total=100,
+            desc=desc,
+            unit="%",
+            position=0,
+            leave=True,
+            bar_format="{l_bar}{bar}| {n:.1f}%/{total:.0f}% [{elapsed}<{remaining}, {rate_fmt}]"
+        )
+        
+        # Initialize step progress tracking
+        for step in self.pipeline_steps:
+            self.step_progress[step] = 0
+    
+    @contextmanager
+    def step_progress_bar(self, step_name: str, total: int = None, desc: str = None):
+        """Context manager for step-specific progress bars"""
+        if not desc:
+            desc = f"{step_name}"
+        
+        nested_bar = tqdm(
+            total=total,
+            desc=desc,
+            unit="items",
+            position=1,
+            leave=False,
+            bar_format="{l_bar}{bar}| {n}/{total} [{elapsed}<{remaining}, {rate_fmt}]"
+        )
+        
+        self.nested_bars[step_name] = nested_bar
+        
+        try:
+            yield nested_bar
+        finally:
+            nested_bar.close()
+            if step_name in self.nested_bars:
+                del self.nested_bars[step_name]
+    
+    def update_step_progress(self, step_name: str, progress: float):
+        """Update progress for a specific step (0-100)"""
+        with self._lock:
+            if step_name in self.step_progress:
+                self.step_progress[step_name] = min(100, max(0, progress))
+                self._update_main_progress()
+    
+    def complete_step(self, step_name: str):
+        """Mark a step as completed"""
+        self.update_step_progress(step_name, 100)
+        if self.main_bar:
+            self.main_bar.set_postfix_str(f"Completed: {step_name}")
+    
+    def _update_main_progress(self):
+        """Update the main progress bar based on step progress"""
+        if not self.main_bar:
+            return
+        
+        total_weighted_progress = 0
+        total_weight = sum(self.step_weights.values())
+        
+        for step, weight in self.step_weights.items():
+            step_progress = self.step_progress.get(step, 0)
+            total_weighted_progress += (step_progress / 100) * weight
+        
+        overall_progress = (total_weighted_progress / total_weight) * 100
+        self.main_bar.n = overall_progress
+        self.main_bar.refresh()
+    
+    def get_progress_summary(self) -> Dict[str, float]:
+        """Get current progress summary for all steps"""
+        return {
+            "overall_progress": self.main_bar.n if self.main_bar else 0,
+            "step_progress": self.step_progress.copy(),
+            "completed_steps": [step for step, progress in self.step_progress.items() if progress >= 100]
+        }
+    
+    def close_all(self):
+        """Close all progress bars"""
+        # Close nested bars first
+        for bar_name, bar in list(self.nested_bars.items()):
+            try:
+                bar.close()
+            except:
+                pass
+        self.nested_bars.clear()
+        
+        # Close main bar
+        if self.main_bar:
+            try:
+                self.main_bar.close()
+            except:
+                pass
+            self.main_bar = None
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close_all()
+
 class OptimizedFeatureEngineer:
     """Optimized feature engineering with parallel processing"""
     
