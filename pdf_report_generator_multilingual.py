@@ -317,6 +317,8 @@ class MultilingualPDFReportGenerator:
                 logger.error(f"Failed to setup fallback font: {e}")
                 # Ultimate fallback - use system default
                 self.languages['he']['font'] = 'Helvetica'
+        
+        logger.info(f"Hebrew font setup complete. Available: {self.hebrew_font_available}")
     
     def _setup_matplotlib_hebrew_font(self, font_path: str):
         """Configure matplotlib to use Hebrew font."""
