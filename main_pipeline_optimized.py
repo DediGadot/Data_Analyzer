@@ -1127,6 +1127,19 @@ def main():
     parser.add_argument('--n-jobs', type=int, default=-1,
                        help='Number of parallel jobs (-1 for all cores)')
     
+    # Temporal anomaly optimization flags
+    parser.add_argument('--burst-detection-sample-size', type=int, default=10000,
+                       help='Sample size for burst detection (default: 10000 top entities by volume)')
+    
+    parser.add_argument('--temporal-anomaly-min-volume', type=int, default=10,
+                       help='Minimum volume threshold for temporal anomaly detection (default: 10 requests)')
+    
+    parser.add_argument('--use-approximate-temporal', action='store_true', default=True,
+                       help='Enable all temporal approximations (default: True)')
+    
+    parser.add_argument('--temporal-ml-estimators', type=int, default=50,
+                       help='Number of estimators for temporal ML models (default: 50 for speed)')
+    
     args = parser.parse_args()
     
     # Initialize pipeline
