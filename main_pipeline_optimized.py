@@ -547,6 +547,7 @@ class OptimizedFraudDetectionPipeline:
         self.sample_fraction = sample_fraction
         self.pipeline_results = {}
         self.monitor = PerformanceMonitor()
+        self.progress_tracker = ProgressTracker()
         
         logger.info(f"Initialized optimized pipeline: n_jobs={self.n_jobs}, "
                    f"approximate={approximate}, sample_fraction={sample_fraction}")
