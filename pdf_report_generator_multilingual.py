@@ -1320,10 +1320,17 @@ class MultilingualPDFReportGenerator:
                 
                 # Quality vs Volume scatter
                 story.append(Paragraph(self.t('quality_by_volume', lang), styles['SubsectionHeading']))
-                quality_volume_plot = self.create_quality_volume_scatter(quality_df, lang)
-                if quality_volume_plot:
-                    story.append(Image(quality_volume_plot, width=5*inch, height=3*inch))
-                    self.add_plot_description(story, 'quality_by_volume', lang, styles)
+                try:
+                    quality_volume_plot = self.create_quality_volume_scatter(quality_df, lang)
+                    if quality_volume_plot and os.path.exists(quality_volume_plot):
+                        story.append(Image(quality_volume_plot, width=5*inch, height=3*inch))
+                        self.add_plot_description(story, 'quality_by_volume', lang, styles)
+                    else:
+                        logger.warning(f"Quality volume plot not created for {lang}")
+                        story.append(Paragraph(f"[Quality volume plot unavailable for {lang}]", styles['CustomNormal']))
+                except Exception as e:
+                    logger.error(f"Error creating quality volume plot for {lang}: {e}")
+                    story.append(Paragraph(f"[Error creating quality volume plot: {str(e)}]", styles['CustomNormal']))
                 
                 # Top and bottom channels tables
                 story.append(Paragraph(self.t('top_channels', lang), styles['SubsectionHeading']))
