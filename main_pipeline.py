@@ -609,7 +609,7 @@ def main():
     # Configuration
     DATA_PATH = "/home/fiod/shimshi/bq-results-20250804-141411-1754316868932.csv"
     OUTPUT_DIR = "/home/fiod/shimshi/"
-    SAMPLE_FRACTION = 0.2  # Use 1% of data for demo (adjust as needed)
+    SAMPLE_FRACTION = 0.1  # Use 1% of data for demo (adjust as needed)
     
     # Initialize and run pipeline
     pipeline = FraudDetectionPipeline(DATA_PATH, OUTPUT_DIR)

@@ -1,0 +1,502 @@
+{
+  "top_quality_channels": [
+    {
+      "quality_score": 7.128955343082196,
+      "original_label": 8.320383871783719,
+      "volume": 37,
+      "bot_rate": 0.027027027681469917,
+      "fraud_score_avg": 0.18380489945411682,
+      "ip_diversity": 37,
+      "country_diversity": 1,
+      "quality_category": "High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 7.106505834151174,
+      "original_label": 8.292830215775934,
+      "volume": 28,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 28,
+      "country_diversity": 1,
+      "quality_category": "High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 6.73791225096132,
+      "original_label": 7.774468593130864,
+      "volume": 27,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 27,
+      "country_diversity": 1,
+      "quality_category": "Medium-High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 6.734742844142492,
+      "original_label": 8.131838073792702,
+      "volume": 24,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 24,
+      "country_diversity": 1,
+      "quality_category": "Medium-High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 6.385902218579472,
+      "original_label": 7.110826688470469,
+      "volume": 26,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 26,
+      "country_diversity": 1,
+      "quality_category": "Medium-High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 6.364562898383823,
+      "original_label": 7.943192977303376,
+      "volume": 31,
+      "bot_rate": 0.032258063554763794,
+      "fraud_score_avg": 0.21938003599643707,
+      "ip_diversity": 31,
+      "country_diversity": 1,
+      "quality_category": "Medium-High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 6.182892277394805,
+      "original_label": 7.3846203950985645,
+      "volume": 20,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 20,
+      "country_diversity": 1,
+      "quality_category": "Medium-High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 5.924797862495918,
+      "original_label": 7.032653570112851,
+      "volume": 23,
+      "bot_rate": 0.08695652335882187,
+      "fraud_score_avg": 0.5913723111152649,
+      "ip_diversity": 23,
+      "country_diversity": 1,
+      "quality_category": "Medium-High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 5.922360668024517,
+      "original_label": 7.022680443428,
+      "volume": 25,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 25,
+      "country_diversity": 1,
+      "quality_category": "Medium-High",
+      "high_risk": false
+    },
+    {
+      "quality_score": 5.8798824613442005,
+      "original_label": 6.985736880291365,
+      "volume": 19,
+      "bot_rate": 0.05263157933950424,
+      "fraud_score_avg": 0.3579358458518982,
+      "ip_diversity": 19,
+      "country_diversity": 1,
+      "quality_category": "Medium-High",
+      "high_risk": false
+    }
+  ],
+  "bottom_quality_channels": [
+    {
+      "quality_score": 2.472292728852752,
+      "original_label": 2.6389132826542383,
+      "volume": 1,
+      "bot_rate": 1.0,
+      "fraud_score_avg": 6.80078125,
+      "ip_diversity": 1,
+      "country_diversity": 1,
+      "quality_category": "Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.6413849352697727,
+      "original_label": 2.874578834304948,
+      "volume": 2,
+      "bot_rate": 1.0,
+      "fraud_score_avg": 6.80078125,
+      "ip_diversity": 2,
+      "country_diversity": 2,
+      "quality_category": "Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.7961024891529607,
+      "original_label": 3.0529748976756044,
+      "volume": 1,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 1,
+      "country_diversity": 1,
+      "quality_category": "Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.9247988999616417,
+      "original_label": 3.2166063974153056,
+      "volume": 2,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 2,
+      "country_diversity": 1,
+      "quality_category": "Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 3.0305235403857766,
+      "original_label": 4.742102784513879,
+      "volume": 2,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 2,
+      "country_diversity": 1,
+      "quality_category": "Medium-Low",
+      "high_risk": false
+    },
+    {
+      "quality_score": 3.1502491938801898,
+      "original_label": 3.695750910910937,
+      "volume": 2,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 2,
+      "country_diversity": 1,
+      "quality_category": "Medium-Low",
+      "high_risk": false
+    },
+    {
+      "quality_score": 3.1502491938801898,
+      "original_label": 3.4535542380285507,
+      "volume": 2,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 2,
+      "country_diversity": 1,
+      "quality_category": "Medium-Low",
+      "high_risk": false
+    },
+    {
+      "quality_score": 3.1986115491381164,
+      "original_label": 4.1929492234299035,
+      "volume": 2,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 2,
+      "country_diversity": 1,
+      "quality_category": "Medium-Low",
+      "high_risk": false
+    },
+    {
+      "quality_score": 3.3436538397883373,
+      "original_label": 3.4603452498761795,
+      "volume": 3,
+      "bot_rate": 0.3333333432674408,
+      "fraud_score_avg": 2.2669270038604736,
+      "ip_diversity": 3,
+      "country_diversity": 1,
+      "quality_category": "Medium-Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 3.361116024776084,
+      "original_label": 3.9250579199550346,
+      "volume": 2,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 2,
+      "country_diversity": 1,
+      "quality_category": "Medium-Low",
+      "high_risk": false
+    }
+  ],
+  "high_risk_channels": [
+    {
+      "quality_score": 4.269811324725258,
+      "original_label": 4.739392552810569,
+      "volume": 3,
+      "bot_rate": 0.3333333432674408,
+      "fraud_score_avg": 2.2669270038604736,
+      "ip_diversity": 3,
+      "country_diversity": 1,
+      "quality_category": "Medium-Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 3.3436538397883373,
+      "original_label": 3.4603452498761795,
+      "volume": 3,
+      "bot_rate": 0.3333333432674408,
+      "fraud_score_avg": 2.2669270038604736,
+      "ip_diversity": 3,
+      "country_diversity": 1,
+      "quality_category": "Medium-Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.9247988999616417,
+      "original_label": 3.2166063974153056,
+      "volume": 2,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 2,
+      "country_diversity": 1,
+      "quality_category": "Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.7961024891529607,
+      "original_label": 3.0529748976756044,
+      "volume": 1,
+      "bot_rate": 0.0,
+      "fraud_score_avg": 0.0,
+      "ip_diversity": 1,
+      "country_diversity": 1,
+      "quality_category": "Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.6413849352697727,
+      "original_label": 2.874578834304948,
+      "volume": 2,
+      "bot_rate": 1.0,
+      "fraud_score_avg": 6.80078125,
+      "ip_diversity": 2,
+      "country_diversity": 2,
+      "quality_category": "Low",
+      "high_risk": true
+    },
+    {
+      "quality_score": 2.472292728852752,
+      "original_label": 2.6389132826542383,
+      "volume": 1,
+      "bot_rate": 1.0,
+      "fraud_score_avg": 6.80078125,
+      "ip_diversity": 1,
+      "country_diversity": 1,
+      "quality_category": "Low",
+      "high_risk": true
+    }
+  ],
+  "most_anomalous_channels": [
+    {
+      "channelId": "fa9d317f-a1db-437a-bea6-bd3f95e15ad4",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": true,
+      "overall_anomaly_count": 3,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "7b2e70e6-155d-4d62-940c-54b245db933a",
+      "temporal_anomaly": true,
+      "geographic_anomaly": true,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 3,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "27d002df-ad9e-4fa8-85c3-fffcdfc4eb14",
+      "temporal_anomaly": false,
+      "geographic_anomaly": false,
+      "device_anomaly": true,
+      "behavioral_anomaly": false,
+      "volume_anomaly": true,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "75a23802-4629-4e8e-9b61-5761e2f98a43",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "813d24ab-6436-491a-928e-9b45603f8faf",
+      "temporal_anomaly": true,
+      "geographic_anomaly": true,
+      "device_anomaly": false,
+      "behavioral_anomaly": false,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "b5f3dd2f-c3df-48de-af40-96d741f2b422",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "336133cb-382a-4873-a340-d03cdea2893e",
+      "temporal_anomaly": false,
+      "geographic_anomaly": true,
+      "device_anomaly": true,
+      "behavioral_anomaly": false,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "7315d681-f7ad-4bf8-a6ce-12bac908ca4f",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": true,
+      "behavioral_anomaly": false,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "04025936-7fea-4b0f-88e9-2d672ce8d459",
+      "temporal_anomaly": false,
+      "geographic_anomaly": false,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": true,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "7bc6e517-7c22-4f91-bcd6-5170215ddfff",
+      "temporal_anomaly": false,
+      "geographic_anomaly": true,
+      "device_anomaly": false,
+      "behavioral_anomaly": false,
+      "volume_anomaly": true,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "53242a0c-a3d4-456b-b6c4-5d90e45c4c06",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "d8b25fbc-bc9d-4cec-960e-c594fa92a533",
+      "temporal_anomaly": false,
+      "geographic_anomaly": true,
+      "device_anomaly": true,
+      "behavioral_anomaly": false,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "6586094e-63ba-482e-a7f1-ab7fd7646ade",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "44334454-9782-4968-8f9f-5b38d3354bc9",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": true,
+      "behavioral_anomaly": false,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "b2180e3f-d6ee-4b3d-ad3c-1eb55f7ed60c",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "7315d681-f7ad-4bf8-a6ce-12bac908ca4f",
+      "temporal_anomaly": false,
+      "geographic_anomaly": true,
+      "device_anomaly": false,
+      "behavioral_anomaly": true,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "ae1ced6b-39ae-4ffb-971e-e0813e9b9e17",
+      "temporal_anomaly": false,
+      "geographic_anomaly": false,
+      "device_anomaly": true,
+      "behavioral_anomaly": true,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 2,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "c01193ee-b8a9-4092-a0e6-8d5588bb9802",
+      "temporal_anomaly": false,
+      "geographic_anomaly": false,
+      "device_anomaly": true,
+      "behavioral_anomaly": false,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 1,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "9cf778f2-b8e5-43fe-ba66-eab78bc8be58",
+      "temporal_anomaly": false,
+      "geographic_anomaly": false,
+      "device_anomaly": true,
+      "behavioral_anomaly": false,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 1,
+      "overall_anomaly_flag": true
+    },
+    {
+      "channelId": "1d0a8ef5-db60-4ece-a12d-017150b85ff1",
+      "temporal_anomaly": true,
+      "geographic_anomaly": false,
+      "device_anomaly": false,
+      "behavioral_anomaly": false,
+      "volume_anomaly": false,
+      "overall_anomaly_count": 1,
+      "overall_anomaly_flag": true
+    }
+  ],
+  "summary_stats": {
+    "total_channels": 159,
+    "high_risk_count": 6,
+    "avg_quality_score": 5.07084439068821,
+    "processing_mode": "approximate"
+  }
+}
