@@ -572,6 +572,9 @@ class OptimizedFraudDetectionPipeline:
         
         pipeline_start_time = time.time()
         
+        # Initialize progress tracking
+        self.progress_tracker.initialize_main_progress()
+        
         try:
             # Step 1: Optimized Data Loading
             logger.info("Step 1: Loading data with parallel chunk processing...")
