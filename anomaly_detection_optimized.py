@@ -727,7 +727,10 @@ class OptimizedAnomalyDetector:
     
     def run_comprehensive_anomaly_detection(self, df: pd.DataFrame, progress_bar=None) -> pd.DataFrame:
         """
-        Run all optimized anomaly detection methods with progress tracking.
+        Run all optimized anomaly detection methods with PARALLEL processing.
+        
+        CRITICAL FIX: This method now runs the 5 anomaly detection types in parallel
+        using ProcessPoolExecutor instead of sequentially, enabling true multi-core usage.
         
         Args:
             df: DataFrame with traffic data
@@ -736,62 +739,77 @@ class OptimizedAnomalyDetector:
         Returns:
             DataFrame with all anomaly scores and flags
         """
-        logger.info("Running comprehensive optimized anomaly detection")
+        logger.info("Running comprehensive optimized anomaly detection with PARALLEL processing")
         
         if progress_bar:
-            progress_bar.set_description("Starting anomaly detection")
+            progress_bar.set_description("Starting parallel anomaly detection")
+        
+        # Monitor CPU usage for verification
+        cpu_usage_start = psutil.cpu_percent(interval=None)
+        start_time = time.time()
         
         results = {}
         
-        # Temporal anomalies with progress tracking
-        try:
-            if progress_bar:
-                progress_bar.set_description("Temporal anomaly detection")
-            temporal_results = self.detect_temporal_anomalies(df, progress_bar)
-            if not temporal_results.empty:
-                results['temporal'] = temporal_results
-        except Exception as e:
-            logger.error(f"Temporal anomaly detection failed: {e}")
+        # CRITICAL FIX: Run all 5 anomaly detection methods in PARALLEL
+        max_workers = min(5, cpu_count())  # Use up to 5 workers for 5 detection types
+        logger.info(f"Running anomaly detection with {max_workers} parallel workers")
         
-        # Geographic anomalies
-        try:
-            if progress_bar:
-                progress_bar.set_description("Geographic anomaly detection")
-            geo_results = self.detect_geographic_anomalies(df, progress_bar)
-            if not geo_results.empty:
-                results['geographic'] = geo_results
-        except Exception as e:
-            logger.error(f"Geographic anomaly detection failed: {e}")
+        # Define detection tasks
+        detection_tasks = [
+            ('temporal', self._run_temporal_detection_wrapper, df.copy()),
+            ('geographic', self._run_geographic_detection_wrapper, df.copy()),
+            ('device', self._run_device_detection_wrapper, df.copy()),
+            ('behavioral', self._run_behavioral_detection_wrapper, df.copy()),
+            ('volume', self._run_volume_detection_wrapper, df.copy())
+        ]
         
-        # Device anomalies
+        # Execute all detection methods in parallel
         try:
-            if progress_bar:
-                progress_bar.set_description("Device anomaly detection")
-            device_results = self.detect_device_anomalies(df, progress_bar)
-            if not device_results.empty:
-                results['device'] = device_results
+            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+                # Submit all tasks
+                future_to_detection = {}
+                for detection_type, detection_func, data in detection_tasks:
+                    future = executor.submit(detection_func, data)
+                    future_to_detection[future] = detection_type
+                
+                # Collect results as they complete
+                completed_tasks = 0
+                total_tasks = len(detection_tasks)
+                
+                for future in as_completed(future_to_detection):
+                    detection_type = future_to_detection[future]
+                    completed_tasks += 1
+                    
+                    try:
+                        result = future.result()
+                        if result is not None and not result.empty:
+                            results[detection_type] = result
+                            logger.info(f"Completed {detection_type} anomaly detection ({completed_tasks}/{total_tasks})")
+                        else:
+                            logger.warning(f"{detection_type} anomaly detection returned empty results")
+                    except Exception as e:
+                        logger.error(f"{detection_type} anomaly detection failed: {e}")
+                    
+                    # Update progress
+                    if progress_bar:
+                        progress_pct = (completed_tasks / total_tasks) * 80  # Reserve 20% for combining results
+                        progress_bar.n = progress_pct
+                        progress_bar.set_description(f"Completed {detection_type} detection ({completed_tasks}/{total_tasks})")
+                        progress_bar.refresh()
+                        
         except Exception as e:
-            logger.error(f"Device anomaly detection failed: {e}")
+            logger.error(f"Parallel anomaly detection failed: {e}")
+            # Fallback to sequential processing if parallel fails
+            logger.info("Falling back to sequential processing...")
+            return self._run_sequential_fallback(df, progress_bar)
         
-        # Behavioral anomalies
-        try:
-            if progress_bar:
-                progress_bar.set_description("Behavioral anomaly detection")
-            behavioral_results = self.detect_behavioral_anomalies(df, progress_bar)
-            if not behavioral_results.empty:
-                results['behavioral'] = behavioral_results
-        except Exception as e:
-            logger.error(f"Behavioral anomaly detection failed: {e}")
+        # Monitor CPU usage after parallel processing
+        cpu_usage_end = psutil.cpu_percent(interval=None)
+        processing_time = time.time() - start_time
         
-        # Volume anomalies
-        try:
-            if progress_bar:
-                progress_bar.set_description("Volume anomaly detection")
-            volume_results = self.detect_volume_anomalies(df, progress_bar)
-            if not volume_results.empty:
-                results['volume'] = volume_results
-        except Exception as e:
-            logger.error(f"Volume anomaly detection failed: {e}")
+        logger.info(f"Parallel anomaly detection completed in {processing_time:.2f} seconds")
+        logger.info(f"CPU usage: {cpu_usage_start:.1f}% -> {cpu_usage_end:.1f}%")
+        logger.info(f"Successfully completed {len(results)}/{len(detection_tasks)} detection methods")
         
         # Combine all results
         if not results:
@@ -799,7 +817,9 @@ class OptimizedAnomalyDetector:
             return pd.DataFrame()
         
         if progress_bar:
-            progress_bar.set_description("Combining anomaly results")
+            progress_bar.set_description("Combining parallel anomaly results")
+            progress_bar.n = 90  # 90% complete
+            progress_bar.refresh()
         
         # Merge all results
         final_results = None
@@ -821,9 +841,130 @@ class OptimizedAnomalyDetector:
                 final_results['overall_anomaly_flag'] = final_results['overall_anomaly_count'] >= 2
         
         if progress_bar:
-            progress_bar.set_description("Anomaly detection complete")
+            progress_bar.set_description("Parallel anomaly detection complete")
+            progress_bar.n = 100
+            progress_bar.refresh()
         
-        logger.info(f"Comprehensive anomaly detection complete. Analyzed {len(final_results) if final_results is not None else 0} entities")
+        logger.info(f"PARALLEL anomaly detection complete. Analyzed {len(final_results) if final_results is not None else 0} entities")
+        logger.info(f"Parallel processing enabled {max_workers}-core utilization for anomaly detection")
+        
+        return final_results if final_results is not None else pd.DataFrame()
+    
+    def _run_temporal_detection_wrapper(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Wrapper for temporal anomaly detection to be used in parallel processing"""
+        try:
+            return self.detect_temporal_anomalies(df, progress_bar=None)
+        except Exception as e:
+            logger.error(f"Temporal detection wrapper failed: {e}")
+            return pd.DataFrame()
+    
+    def _run_geographic_detection_wrapper(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Wrapper for geographic anomaly detection to be used in parallel processing"""
+        try:
+            return self.detect_geographic_anomalies(df, progress_bar=None)
+        except Exception as e:
+            logger.error(f"Geographic detection wrapper failed: {e}")
+            return pd.DataFrame()
+    
+    def _run_device_detection_wrapper(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Wrapper for device anomaly detection to be used in parallel processing"""
+        try:
+            return self.detect_device_anomalies(df, progress_bar=None)
+        except Exception as e:
+            logger.error(f"Device detection wrapper failed: {e}")
+            return pd.DataFrame()
+    
+    def _run_behavioral_detection_wrapper(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Wrapper for behavioral anomaly detection to be used in parallel processing"""
+        try:
+            return self.detect_behavioral_anomalies(df, progress_bar=None)
+        except Exception as e:
+            logger.error(f"Behavioral detection wrapper failed: {e}")
+            return pd.DataFrame()
+    
+    def _run_volume_detection_wrapper(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Wrapper for volume anomaly detection to be used in parallel processing"""
+        try:
+            return self.detect_volume_anomalies(df, progress_bar=None)
+        except Exception as e:
+            logger.error(f"Volume detection wrapper failed: {e}")
+            return pd.DataFrame()
+    
+    def _run_sequential_fallback(self, df: pd.DataFrame, progress_bar=None) -> pd.DataFrame:
+        """Fallback to sequential processing if parallel processing fails"""
+        logger.info("Running sequential fallback anomaly detection")
+        
+        results = {}
+        
+        # Temporal anomalies
+        try:
+            if progress_bar:
+                progress_bar.set_description("Sequential: Temporal anomaly detection")
+            temporal_results = self.detect_temporal_anomalies(df, progress_bar)
+            if not temporal_results.empty:
+                results['temporal'] = temporal_results
+        except Exception as e:
+            logger.error(f"Temporal anomaly detection failed: {e}")
+        
+        # Geographic anomalies
+        try:
+            if progress_bar:
+                progress_bar.set_description("Sequential: Geographic anomaly detection")
+            geo_results = self.detect_geographic_anomalies(df, progress_bar)
+            if not geo_results.empty:
+                results['geographic'] = geo_results
+        except Exception as e:
+            logger.error(f"Geographic anomaly detection failed: {e}")
+        
+        # Device anomalies
+        try:
+            if progress_bar:
+                progress_bar.set_description("Sequential: Device anomaly detection")
+            device_results = self.detect_device_anomalies(df, progress_bar)
+            if not device_results.empty:
+                results['device'] = device_results
+        except Exception as e:
+            logger.error(f"Device anomaly detection failed: {e}")
+        
+        # Behavioral anomalies
+        try:
+            if progress_bar:
+                progress_bar.set_description("Sequential: Behavioral anomaly detection")
+            behavioral_results = self.detect_behavioral_anomalies(df, progress_bar)
+            if not behavioral_results.empty:
+                results['behavioral'] = behavioral_results
+        except Exception as e:
+            logger.error(f"Behavioral anomaly detection failed: {e}")
+        
+        # Volume anomalies
+        try:
+            if progress_bar:
+                progress_bar.set_description("Sequential: Volume anomaly detection")
+            volume_results = self.detect_volume_anomalies(df, progress_bar)
+            if not volume_results.empty:
+                results['volume'] = volume_results
+        except Exception as e:
+            logger.error(f"Volume anomaly detection failed: {e}")
+        
+        # Combine results using existing logic
+        if not results:
+            return pd.DataFrame()
+        
+        final_results = None
+        for anomaly_type, result_df in results.items():
+            if final_results is None:
+                final_results = result_df.copy()
+            else:
+                if 'channelId' in result_df.columns and 'channelId' in final_results.columns:
+                    final_results = final_results.merge(result_df, on='channelId', how='outer')
+                else:
+                    final_results = final_results.merge(result_df, left_index=True, right_index=True, how='outer')
+        
+        if final_results is not None:
+            anomaly_cols = [col for col in final_results.columns if 'anomaly' in col and 'overall' not in col and '_score' not in col]
+            if anomaly_cols:
+                final_results['overall_anomaly_count'] = final_results[anomaly_cols].sum(axis=1)
+                final_results['overall_anomaly_flag'] = final_results['overall_anomaly_count'] >= 2
         
         return final_results if final_results is not None else pd.DataFrame()
     
