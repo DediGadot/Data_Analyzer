@@ -604,8 +604,8 @@ class OptimizedTrafficSimilarity:
         
         return results
     
-    def _compute_lsh_similarity(self, features: pd.DataFrame) -> Dict:
-        """Compute approximate similarity using LSH"""
+    def _compute_lsh_similarity(self, features: pd.DataFrame, progress_tracker=None) -> Dict:
+        """Compute approximate similarity using LSH with progress tracking"""
         # Initialize LSH
         self.lsh = MinHashLSH(threshold=0.5, num_perm=self.num_perm)
         
@@ -613,23 +613,44 @@ class OptimizedTrafficSimilarity:
         minhashes = {}
         feature_cols = [col for col in features.columns if col != 'channelId']
         
-        for idx, row in tqdm(features.iterrows(), total=len(features), desc="Creating MinHashes"):
-            m = MinHash(num_perm=self.num_perm)
+        if progress_tracker:
+            # Use nested progress bar for MinHash creation
+            for idx, row in features.iterrows():
+                m = MinHash(num_perm=self.num_perm)
+                
+                # Convert features to strings for hashing
+                for col in feature_cols:
+                    value = str(row[col])
+                    m.update(value.encode('utf8'))
+                
+                channel_id = row.get('channelId', idx)
+                minhashes[channel_id] = m
+                self.lsh.insert(channel_id, m)
             
-            # Convert features to strings for hashing
-            for col in feature_cols:
-                value = str(row[col])
-                m.update(value.encode('utf8'))
+            # Find similar channels
+            similar_pairs = []
+            for channel_id, minhash in minhashes.items():
+                result = self.lsh.query(minhash)
+                similar_pairs.extend([(channel_id, r) for r in result if r != channel_id])
+        else:
+            # Fallback with tqdm
+            for idx, row in tqdm(features.iterrows(), total=len(features), desc="Creating MinHashes"):
+                m = MinHash(num_perm=self.num_perm)
+                
+                # Convert features to strings for hashing
+                for col in feature_cols:
+                    value = str(row[col])
+                    m.update(value.encode('utf8'))
+                
+                channel_id = row.get('channelId', idx)
+                minhashes[channel_id] = m
+                self.lsh.insert(channel_id, m)
             
-            channel_id = row.get('channelId', idx)
-            minhashes[channel_id] = m
-            self.lsh.insert(channel_id, m)
-        
-        # Find similar channels
-        similar_pairs = []
-        for channel_id, minhash in tqdm(minhashes.items(), desc="Finding similar channels"):
-            result = self.lsh.query(minhash)
-            similar_pairs.extend([(channel_id, r) for r in result if r != channel_id])
+            # Find similar channels
+            similar_pairs = []
+            for channel_id, minhash in tqdm(minhashes.items(), desc="Finding similar channels"):
+                result = self.lsh.query(minhash)
+                similar_pairs.extend([(channel_id, r) for r in result if r != channel_id])
         
         return {
             'similar_pairs': similar_pairs,
