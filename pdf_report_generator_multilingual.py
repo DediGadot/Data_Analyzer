@@ -673,11 +673,18 @@ class MultilingualPDFReportGenerator:
         if not anomaly_cols:
             return None
         
-        # Get top anomalous channels
+        # Get top anomalous channels with safety checks
         if 'overall_anomaly_count' in anomaly_df.columns:
-            top_anomalous = anomaly_df.nlargest(min(20, len(anomaly_df)), 'overall_anomaly_count')
+            # Ensure we have some non-zero anomaly counts
+            non_zero_anomalies = anomaly_df[anomaly_df['overall_anomaly_count'] > 0]
+            if len(non_zero_anomalies) > 0:
+                top_anomalous = non_zero_anomalies.nlargest(min(20, len(non_zero_anomalies)), 'overall_anomaly_count')
+            else:
+                # No actual anomalies found, use all data
+                top_anomalous = anomaly_df.head(min(20, len(anomaly_df)))
+                logger.warning("No channels with anomalies > 0 found")
         else:
-            top_anomalous = anomaly_df.head(20)
+            top_anomalous = anomaly_df.head(min(20, len(anomaly_df)))
         
         # Create binary matrix
         anomaly_matrix = top_anomalous[anomaly_cols].astype(int)
