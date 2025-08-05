@@ -22,6 +22,10 @@ import warnings
 import gc
 from tqdm import tqdm
 import numba
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from multiprocessing import cpu_count
+import psutil
+import time
 
 warnings.filterwarnings('ignore')
 
@@ -145,11 +149,12 @@ class OptimizedAnomalyDetector:
         scaler = StandardScaler()
         country_scaled = scaler.fit_transform(country_data)
         
-        # Use optimized Isolation Forest
+        # Use optimized Isolation Forest with multi-threading
         iso_forest = IsolationForest(
             contamination=self.contamination,
             random_state=self.random_state,
-            n_estimators=self.temporal_ml_estimators
+            n_estimators=self.temporal_ml_estimators,
+            n_jobs=-1  # Use all available cores
         )
         geo_anomaly_scores = iso_forest.fit_predict(country_scaled)
         geo_anomaly_scores = iso_forest.decision_function(country_scaled)
@@ -253,14 +258,18 @@ class OptimizedAnomalyDetector:
         scaler = RobustScaler()
         features_scaled = scaler.fit_transform(combined_features)
         
-        # Optimized anomaly detection methods
+        # Optimized anomaly detection methods with multi-threading
         detectors = {
             'isolation_forest': IsolationForest(
                 contamination=self.contamination, 
                 random_state=self.random_state,
-                n_estimators=self.temporal_ml_estimators
+                n_estimators=self.temporal_ml_estimators,
+                n_jobs=-1  # Use all available cores
             ),
-            'lof': LocalOutlierFactor(contamination=self.contamination),
+            'lof': LocalOutlierFactor(
+                contamination=self.contamination,
+                n_jobs=-1  # Use all available cores
+            ),
             'one_class_svm': OneClassSVM(nu=self.contamination)
         }
         
@@ -316,11 +325,12 @@ class OptimizedAnomalyDetector:
         if progress_bar:
             progress_bar.set_description("Running behavioral anomaly detection")
         
-        # Optimized anomaly detection approaches
+        # Optimized anomaly detection approaches with multi-threading
         iso_forest = IsolationForest(
             contamination=self.contamination, 
             random_state=self.random_state,
-            n_estimators=self.temporal_ml_estimators
+            n_estimators=self.temporal_ml_estimators,
+            n_jobs=-1  # Use all available cores
         )
         iso_anomalies = iso_forest.fit_predict(features_scaled) == -1
         
@@ -436,11 +446,12 @@ class OptimizedAnomalyDetector:
         # Normalize by total traffic to get patterns
         hourly_patterns = hourly_data.div(hourly_data.sum(axis=1), axis=0).fillna(0)
         
-        # Detect anomalies using optimized Isolation Forest
+        # Detect anomalies using optimized Isolation Forest with multi-threading
         iso_forest = IsolationForest(
             contamination=self.contamination, 
             random_state=self.random_state,
-            n_estimators=self.temporal_ml_estimators
+            n_estimators=self.temporal_ml_estimators,
+            n_jobs=-1  # Use all available cores
         )
         anomaly_scores = iso_forest.fit_predict(hourly_patterns)
         decision_scores = iso_forest.decision_function(hourly_patterns)
