@@ -814,26 +814,46 @@ Processing Speed: {self.pipeline_results['pipeline_summary'].get('records_per_se
                     final_results = json.load(f)
             
             # Ensure quality_results has the required structure for PDF generation
-            if 'channelId' not in quality_results.columns and quality_results.index.name != 'channelId':
-                # Reset index if channelId is in the index
-                if 'channelId' in str(quality_results.index.names):
-                    quality_results = quality_results.reset_index()
-                else:
-                    # Add a dummy channelId column if missing
-                    quality_results['channelId'] = range(len(quality_results))
+            quality_results_copy = quality_results.copy()
+            
+            # Check if channelId is the index name or in the index
+            if quality_results_copy.index.name == 'channelId' or 'channelId' in str(quality_results_copy.index.names):
+                # Reset index to convert channelId from index to column
+                quality_results_copy = quality_results_copy.reset_index()
+                logger.info("Converted channelId from index to column for PDF generation")
+            elif 'channelId' not in quality_results_copy.columns:
+                # If channelId is neither in columns nor index, create it from the index
+                quality_results_copy['channelId'] = quality_results_copy.index.astype(str)
+                logger.info("Created channelId column from index for PDF generation")
+            
+            # Ensure anomaly_results also has channelId as column if needed
+            anomaly_results_copy = anomaly_results.copy() if not anomaly_results.empty else anomaly_results
+            if not anomaly_results_copy.empty:
+                if anomaly_results_copy.index.name == 'channelId' or 'channelId' in str(anomaly_results_copy.index.names):
+                    anomaly_results_copy = anomaly_results_copy.reset_index()
+                elif 'channelId' not in anomaly_results_copy.columns:
+                    anomaly_results_copy['channelId'] = anomaly_results_copy.index.astype(str)
+            
+            # Verify the structure before PDF generation
+            logger.info(f"Quality results structure for PDF: columns={list(quality_results_copy.columns)}, shape={quality_results_copy.shape}")
+            if not anomaly_results_copy.empty:
+                logger.info(f"Anomaly results structure for PDF: columns={list(anomaly_results_copy.columns)}, shape={anomaly_results_copy.shape}")
             
             # Generate PDFs
             en_path, he_path = self.pdf_generator.generate_comprehensive_report(
-                quality_results,
-                anomaly_results,
+                quality_results_copy,
+                anomaly_results_copy,
                 final_results,
                 self.pipeline_results
             )
             
+            logger.info(f"PDF reports generated - English: {en_path}, Hebrew: {he_path}")
             return en_path
             
         except Exception as e:
             logger.error(f"Failed to generate PDF report: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return None
 
 
