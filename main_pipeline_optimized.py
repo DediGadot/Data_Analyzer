@@ -410,8 +410,8 @@ class OptimizedQualityScorer:
         # Use fewer trees for approximate mode
         self.n_estimators = n_estimators or (50 if approximate else 100)
     
-    def score_channels_fast(self, df: pd.DataFrame, batch_size: int = 10000) -> pd.DataFrame:
-        """Fast channel scoring with batched processing"""
+    def score_channels_fast(self, df: pd.DataFrame, batch_size: int = 10000, progress_tracker=None) -> pd.DataFrame:
+        """Fast channel scoring with batched processing and progress tracking"""
         logger.info(f"Scoring channels with approximate={self.approximate}")
         
         if self.approximate:
@@ -419,18 +419,47 @@ class OptimizedQualityScorer:
             if hasattr(self.base_scorer, 'model'):
                 self.base_scorer.model.n_estimators = self.n_estimators
         
+        # Calculate total batches for progress tracking
+        total_batches = (len(df) + batch_size - 1) // batch_size
+        
         # Process in batches for memory efficiency
         results = []
-        for i in tqdm(range(0, len(df), batch_size), desc="Scoring batches"):
-            batch = df.iloc[i:i+batch_size]
-            batch_results = self.base_scorer.score_channels(batch)
-            results.append(batch_results)
-            
-            # Memory cleanup
-            if i % (batch_size * 5) == 0:
-                gc.collect()
         
-        return pd.concat(results, ignore_index=True)
+        if progress_tracker:
+            with progress_tracker.step_progress_bar("Quality Scoring", total=total_batches, desc="Scoring channel batches") as pbar:
+                for i, batch_start in enumerate(range(0, len(df), batch_size)):
+                    batch = df.iloc[batch_start:batch_start+batch_size]
+                    batch_results = self.base_scorer.score_channels(batch)
+                    results.append(batch_results)
+                    
+                    # Update progress
+                    pbar.update(1)
+                    progress_pct = ((i + 1) / total_batches) * 100
+                    progress_tracker.update_step_progress("Quality Scoring", progress_pct)
+                    
+                    # Memory cleanup
+                    if i % 5 == 0:
+                        gc.collect()
+        else:
+            # Fallback without progress tracking
+            for i in tqdm(range(0, len(df), batch_size), desc="Scoring batches"):
+                batch = df.iloc[i:i+batch_size]
+                batch_results = self.base_scorer.score_channels(batch)
+                results.append(batch_results)
+                
+                # Memory cleanup
+                if i % (batch_size * 5) == 0:
+                    gc.collect()
+        
+        # Combine results
+        if progress_tracker:
+            with progress_tracker.step_progress_bar("Quality Scoring", total=1, desc="Combining scoring results") as pbar:
+                final_results = pd.concat(results, ignore_index=True)
+                pbar.update(1)
+        else:
+            final_results = pd.concat(results, ignore_index=True)
+        
+        return final_results
 
 class OptimizedAnomalyDetector:
     """Optimized anomaly detection with approximate algorithms"""
