@@ -47,9 +47,6 @@ class MultilingualPDFReportGenerator:
         self.figures_dir = os.path.join(output_dir, "report_figures")
         os.makedirs(self.figures_dir, exist_ok=True)
         
-        # Initialize Hebrew font support
-        self._setup_hebrew_fonts()
-        
         # Language-specific configurations
         self.languages = {
             'en': {
