@@ -656,7 +656,7 @@ class OptimizedFraudDetectionPipeline:
             sample_size = 1000
             channel_features = channel_groups.apply(
                 lambda x: pd.Series({
-                    k: v(x.sample(min(len(x), sample_size))) if callable(v) else x[v].iloc[0]
+                    k: v(x.sample(min(len(x), sample_size))) if callable(v) else len(x) if v == 'size' else x[v].iloc[0]
                     for k, v in agg_funcs.items()
                 })
             )
