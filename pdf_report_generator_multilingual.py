@@ -1247,6 +1247,7 @@ class MultilingualPDFReportGenerator:
                     filename = f"fraud_detection_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
                 
                 filepath = os.path.join(self.output_dir, filename)
+                logger.debug(f"Creating PDF at: {filepath}")
                 
                 doc = SimpleDocTemplate(
                     filepath,
