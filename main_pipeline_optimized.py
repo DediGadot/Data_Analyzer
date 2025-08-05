@@ -579,16 +579,28 @@ class OptimizedTrafficSimilarity:
         self.base_model = TrafficSimilarityModel()
         self.lsh = None
     
-    def compute_similarity_fast(self, channel_features: pd.DataFrame) -> Dict:
-        """Fast similarity computation using MinHash LSH"""
+    def compute_similarity_fast(self, channel_features: pd.DataFrame, progress_tracker=None) -> Dict:
+        """Fast similarity computation using MinHash LSH with progress tracking"""
         logger.info(f"Computing traffic similarity with approximate={self.approximate}")
         
         if self.approximate and len(channel_features) > 1000:
             # Use MinHash LSH for approximate similarity
-            results = self._compute_lsh_similarity(channel_features)
+            if progress_tracker:
+                with progress_tracker.step_progress_bar("Traffic Similarity", total=1, desc="Computing LSH similarity") as pbar:
+                    results = self._compute_lsh_similarity(channel_features, progress_tracker)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Traffic Similarity", 100)
+            else:
+                results = self._compute_lsh_similarity(channel_features)
         else:
             # Use base model for exact similarity
-            results = self.base_model.fit(channel_features)
+            if progress_tracker:
+                with progress_tracker.step_progress_bar("Traffic Similarity", total=1, desc="Computing exact similarity") as pbar:
+                    results = self.base_model.fit(channel_features)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Traffic Similarity", 100)
+            else:
+                results = self.base_model.fit(channel_features)
         
         return results
     
