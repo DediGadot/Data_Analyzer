@@ -77,5 +77,4 @@ en_path, he_path = generator.generate_comprehensive_report(
 
 print(f"\nEnglish PDF generated: {en_path}")
 print(f"Hebrew PDF generated: {he_path}")
-print("\nTest completed successfully\!")
-EOF < /dev/null
+print("\nTest completed successfully!")
