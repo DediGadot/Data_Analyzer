@@ -225,8 +225,11 @@ class OptimizedFeatureEngineer:
         return np.mean(values), np.std(values), np.median(values)
     
     def create_features_parallel(self, df: pd.DataFrame, chunk_size: int = 50000, progress_tracker=None) -> pd.DataFrame:
-        """Create features in parallel across chunks with progress tracking"""
+        """Create features in parallel across chunks with REDUCED serialization overhead"""
         logger.info(f"Starting parallel feature engineering with {self.n_jobs} workers")
+        
+        # OPTIMIZATION: Use larger chunks to reduce serialization overhead
+        optimal_chunk_size = max(chunk_size, len(df) // (self.n_jobs * 2)) if len(df) > 100000 else chunk_size
         
         if self.approximate and len(df) > 100000:
             # In approximate mode, use base feature engineer directly for consistency
@@ -240,19 +243,39 @@ class OptimizedFeatureEngineer:
             else:
                 return self.base_engineer.create_all_features(df)
         
-        # Split dataframe into chunks for parallel processing
-        chunks = [df[i:i+chunk_size] for i in range(0, len(df), chunk_size)]
-        logger.info(f"Split data into {len(chunks)} chunks of ~{chunk_size} rows")
+        # OPTIMIZATION: Check if parallel processing is beneficial
+        if len(df) < 100000:
+            logger.info(f"Dataset size ({len(df)} rows) is small, using sequential processing to avoid serialization overhead")
+            if progress_tracker:
+                with progress_tracker.step_progress_bar("Feature Engineering", total=1, desc="Creating features (sequential)") as pbar:
+                    result = self.base_engineer.create_all_features(df)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Feature Engineering", 100)
+                return result
+            else:
+                return self.base_engineer.create_all_features(df)
+        
+        # Split dataframe into OPTIMIZED chunks for parallel processing
+        chunks = [df[i:i+optimal_chunk_size] for i in range(0, len(df), optimal_chunk_size)]
+        logger.info(f"Split data into {len(chunks)} optimized chunks of ~{optimal_chunk_size} rows (reduced from {chunk_size})")
         
         if progress_tracker:
-            with progress_tracker.step_progress_bar("Feature Engineering", total=len(chunks), desc="Processing feature chunks") as pbar:
-                # Process chunks in parallel using base feature engineer
-                with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+            with progress_tracker.step_progress_bar("Feature Engineering", total=len(chunks), desc="Processing optimized feature chunks") as pbar:
+                # OPTIMIZATION: Use ThreadPoolExecutor for I/O bound feature engineering to reduce serialization
+                # ProcessPoolExecutor only beneficial for CPU-intensive operations with large data
+                executor_class = ThreadPoolExecutor if len(chunks) <= 4 else ProcessPoolExecutor
+                max_workers = min(self.n_jobs, len(chunks))  # Don't exceed chunk count
+                
+                logger.info(f"Using {executor_class.__name__} with {max_workers} workers for {len(chunks)} chunks")
+                
+                with executor_class(max_workers=max_workers) as executor:
                     futures = []
                     
-                    # Submit all chunks
-                    for chunk in chunks:
-                        future = executor.submit(self._process_chunk_with_base_engineer, chunk.copy())
+                    # Submit all chunks with REDUCED copying overhead
+                    for i, chunk in enumerate(chunks):
+                        # OPTIMIZATION: Avoid unnecessary copying for small chunks
+                        chunk_data = chunk if len(chunk) < 10000 else chunk.copy()
+                        future = executor.submit(self._process_chunk_with_base_engineer, chunk_data)
                         futures.append(future)
                     
                     # Collect results with progress updates
@@ -262,7 +285,7 @@ class OptimizedFeatureEngineer:
                             result = future.result()
                             all_results.append(result)
                         except Exception as e:
-                            logger.error(f"Error processing chunk: {e}")
+                            logger.error(f"Error processing chunk {i}: {e}")
                             continue
                         
                         pbar.update(1)
@@ -270,17 +293,24 @@ class OptimizedFeatureEngineer:
                         progress_pct = ((i + 1) / len(futures)) * 100
                         progress_tracker.update_step_progress("Feature Engineering", progress_pct)
         else:
-            # Fallback without progress tracking
-            with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+            # Fallback without progress tracking - OPTIMIZED
+            executor_class = ThreadPoolExecutor if len(chunks) <= 4 else ProcessPoolExecutor
+            max_workers = min(self.n_jobs, len(chunks))
+            
+            logger.info(f"Fallback: Using {executor_class.__name__} with {max_workers} workers")
+            
+            with executor_class(max_workers=max_workers) as executor:
                 futures = []
                 
-                for chunk in tqdm(chunks, desc="Submitting chunks"):
-                    future = executor.submit(self._process_chunk_with_base_engineer, chunk.copy())
+                for chunk in tqdm(chunks, desc="Submitting optimized chunks"):
+                    # OPTIMIZATION: Reduce copying overhead
+                    chunk_data = chunk if len(chunk) < 10000 else chunk.copy()
+                    future = executor.submit(self._process_chunk_with_base_engineer, chunk_data)
                     futures.append(future)
                 
                 # Collect results
                 all_results = []
-                for future in tqdm(as_completed(futures), total=len(futures), desc="Processing chunks"):
+                for future in tqdm(as_completed(futures), total=len(futures), desc="Processing optimized chunks"):
                     try:
                         result = future.result()
                         all_results.append(result)
