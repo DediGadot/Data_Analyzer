@@ -51,6 +51,8 @@ class ParallelismDiagnostic:
         """Test multiprocessing.Pool functionality"""
         print("\n=== Testing multiprocessing.Pool ===")
         
+        # Move function to module level for pickling
+        import types
         def cpu_task(n):
             # CPU-intensive task
             return sum(i*i for i in range(n))
