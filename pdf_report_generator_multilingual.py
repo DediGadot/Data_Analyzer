@@ -641,9 +641,19 @@ class MultilingualPDFReportGenerator:
             plt.xlabel('נפח תעבורה', fontsize=12)
             plt.ylabel('שיעור בוטים', fontsize=12)
             plt.title('מטריצת הערכת סיכונים', fontsize=14, fontweight='bold')
-            # Update labels for Hebrew
-            plt.gca().set_xticklabels(['0-10', '10-100', '100-1K', '1K-10K', '10K+'])
-            plt.gca().set_yticklabels(['0-10%', '10-30%', '30-50%', '50-70%', '70-100%'])
+            # Update labels for Hebrew only if they match the actual data structure
+            ax = plt.gca()
+            current_xlabels = ax.get_xticklabels()
+            current_ylabels = ax.get_yticklabels()
+            
+            # Only update labels if they match expected counts
+            if len(current_xlabels) <= 5:
+                hebrew_volume_labels = ['0-10', '10-100', '100-1K', '1K-10K', '10K+'][:len(current_xlabels)]
+                ax.set_xticklabels(hebrew_volume_labels)
+            
+            if len(current_ylabels) <= 5:
+                hebrew_bot_rate_labels = ['0-10%', '10-30%', '30-50%', '50-70%', '70-100%'][:len(current_ylabels)]
+                ax.set_yticklabels(hebrew_bot_rate_labels)
         else:
             plt.xlabel('Traffic Volume', fontsize=12)
             plt.ylabel('Bot Rate', fontsize=12)
