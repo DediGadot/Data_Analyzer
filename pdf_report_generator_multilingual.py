@@ -1306,10 +1306,17 @@ class MultilingualPDFReportGenerator:
                 
                 # Quality distribution plot
                 story.append(Paragraph(self.t('quality_distribution', lang), styles['SubsectionHeading']))
-                quality_dist_plot = self.create_quality_distribution_plot(quality_df, lang)
-                if quality_dist_plot:
-                    story.append(Image(quality_dist_plot, width=5*inch, height=3*inch))
-                    self.add_plot_description(story, 'quality_distribution', lang, styles)
+                try:
+                    quality_dist_plot = self.create_quality_distribution_plot(quality_df, lang)
+                    if quality_dist_plot and os.path.exists(quality_dist_plot):
+                        story.append(Image(quality_dist_plot, width=5*inch, height=3*inch))
+                        self.add_plot_description(story, 'quality_distribution', lang, styles)
+                    else:
+                        logger.warning(f"Quality distribution plot not created for {lang}")
+                        story.append(Paragraph(f"[Quality distribution plot unavailable for {lang}]", styles['CustomNormal']))
+                except Exception as e:
+                    logger.error(f"Error creating quality distribution plot for {lang}: {e}")
+                    story.append(Paragraph(f"[Error creating quality distribution plot: {str(e)}]", styles['CustomNormal']))
                 
                 # Quality vs Volume scatter
                 story.append(Paragraph(self.t('quality_by_volume', lang), styles['SubsectionHeading']))
