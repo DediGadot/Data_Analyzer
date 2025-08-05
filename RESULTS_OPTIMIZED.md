@@ -1,29 +1,29 @@
 # Fraud Detection ML Pipeline Results (Optimized)
 
-Generated: 2025-08-05 04:56:16
+Generated: 2025-08-05 16:08:17
 Mode: Approximate (Fast)
-Processing Speed: 25 records/second
+Processing Speed: 672 records/second
 
 ## Performance Summary
 
-- **Total Processing Time**: 1.0 minutes
-- **Records Processed**: 1,487
-- **Peak Memory Usage**: 428.59 MB
-- **CPU Cores Used**: 2
+- **Total Processing Time**: 29.5 minutes
+- **Records Processed**: 1,189,903
+- **Peak Memory Usage**: 3722.96 MB
+- **CPU Cores Used**: 4
 - **Optimization Level**: Approximate
 
 ## Key Findings
 
-- **Total Channels Analyzed**: 159
-- **High-Risk Channels**: 6
-- **Average Quality Score**: 5.07/10
+- **Total Channels Analyzed**: 17,273
+- **High-Risk Channels**: 2,624
+- **Average Quality Score**: 3.44/10
 
 ### Performance Breakdown
 
 | Step | Time (seconds) | Memory (MB) |
 |------|----------------|-------------|
-| Data Loading | 35.1 | 411.4 |
-| Feature Engineering | 3.5 | 417.2 |
-| Quality Scoring | 2.6 | 424.5 |
-| Anomaly Detection | 0.0 | 428.6 |
+| Data Loading | 68.8 | 1275.5 |
+| Feature Engineering | 1351.3 | 3723.0 |
+| Quality Scoring | 80.1 | 2191.2 |
+| Anomaly Detection | 175.6 | 2549.8 |
 

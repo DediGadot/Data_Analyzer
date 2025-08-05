@@ -1,0 +1,75 @@
+PDF GENERATION DEBUG REPORT
+================================================================================
+Generated: 2025-08-05 12:02:26.506075
+Test Directory: /home/fiod/shimshi/pdf_debug_test
+
+SUMMARY: 11/11 tests passed
+
+NO ERRORS FOUND
+
+DETAILED TEST RESULTS:
+----------------------------------------
+
+System Check:
+Status: PASSED
+  python_version: 3.12.7 (main, Jun 18 2025, 13:16:51) [GCC 14.2.0]
+  matplotlib_backend: Agg
+  current_directory: /home/fiod/shimshi
+  test_directory_writable: True
+  temp_directory: /tmp
+  available_fonts: ['DejaVu Sans Display', 'DejaVu Sans', 'STIXNonUnicode', 'DejaVu Serif', 'DejaVu Serif', 'STIXSizeFourSym', 'cmsy10', 'STIXGeneral', 'STIXSizeTwoSym', 'DejaVu Sans Mono']
+  available_memory_gb: 5.573833465576172
+  cpu_count: 4
+
+Basic Matplotlib:
+Status: PASSED
+  basic_plot: {'created': True, 'size_bytes': 59411, 'valid_image': True, 'dimensions': (1066, 817)}
+
+Advanced Matplotlib:
+Status: PASSED
+  single_value_histogram: {'created': True}
+  scatter_plot: {'created': True}
+  heatmap: {'created': True}
+
+ReportLab Basic:
+Status: PASSED
+  basic_pdf: {'created': True, 'size_bytes': 1655, 'valid_pdf': True}
+
+ReportLab Advanced:
+Status: PASSED
+  advanced_pdf: {'created': True, 'size_bytes': 62575}
+
+File System:
+Status: PASSED
+  directory_creation: True
+  file_writing: True
+  file_reading: True
+  cleanup: True
+
+Data Generation:
+Status: PASSED
+  quality_df: {'shape': (100, 6), 'columns': ['channelId', 'quality_score', 'bot_rate', 'volume', 'quality_category', 'high_risk'], 'dtypes': {'channelId': 'object', 'quality_score': 'float64', 'bot_rate': 'float64', 'volume': 'int64', 'quality_category': 'object', 'high_risk': 'bool'}}
+  anomaly_df: {'shape': (100, 7), 'columns': ['channelId', 'temporal_anomaly', 'geographic_anomaly', 'volume_anomaly', 'device_anomaly', 'behavioral_anomaly', 'overall_anomaly_count'], 'anomaly_stats': {'total_anomalies': 52, 'channels_with_anomalies': 41}}
+  data_saved: True
+
+Edge Cases:
+Status: PASSED
+  single_value: {'generated': True, 'shape': (1, 6), 'empty': False, 'plot_successful': True}
+  all_same_values: {'generated': True, 'shape': (10, 6), 'empty': False, 'plot_successful': True}
+  extreme_values: {'generated': True, 'shape': (5, 6), 'empty': False, 'plot_successful': True}
+  empty_dataframe: {'generated': True, 'shape': (0, 6), 'empty': True}
+
+Memory Stress:
+Status: PASSED
+  size_100: {'memory_mb': np.float64(0.013321876525878906), 'plot_created': True, 'dataframe_created': True}
+  size_1000: {'memory_mb': np.float64(0.13160133361816406), 'plot_created': True, 'dataframe_created': True}
+  size_10000: {'memory_mb': np.float64(1.316166877746582), 'plot_created': True, 'dataframe_created': True}
+  size_50000: {'memory_mb': np.float64(6.58072566986084), 'plot_created': True, 'dataframe_created': True}
+
+Full Pipeline:
+Status: PASSED
+  pdf_generation: {'english_path': '/home/fiod/shimshi/pdf_debug_test/fraud_detection_report_20250805_120132.pdf', 'hebrew_path': None, 'generation_time_seconds': 41.941443, 'english_created': True, 'hebrew_created': False, 'english_size_bytes': 2093128, 'english_valid_pdf': True}
+
+Error Recovery:
+Status: PASSED
+  nan_handling: {'completed': True, 'english_created': True, 'hebrew_created': False}
