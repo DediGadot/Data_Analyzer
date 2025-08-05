@@ -558,7 +558,12 @@ class OptimizedFraudDetectionPipeline:
     """
     
     def __init__(self, data_path: str, output_dir: str = "/home/fiod/shimshi/",
-                 n_jobs: int = -1, approximate: bool = False, sample_fraction: float = 1.0):
+                 n_jobs: int = -1, approximate: bool = False, sample_fraction: float = 1.0,
+                 # New approximation parameters with reasonable defaults
+                 burst_detection_sample_size: int = 10000,
+                 temporal_anomaly_min_volume: int = 10,
+                 use_approximate_temporal: bool = True,
+                 temporal_ml_estimators: int = 50):
         self.data_path = data_path
         self.output_dir = output_dir
         self.n_jobs = n_jobs if n_jobs > 0 else cpu_count()
@@ -568,15 +573,31 @@ class OptimizedFraudDetectionPipeline:
         self.monitor = PerformanceMonitor()
         self.progress_tracker = ProgressTracker()
         
+        # Store approximation parameters
+        self.burst_detection_sample_size = burst_detection_sample_size
+        self.temporal_anomaly_min_volume = temporal_anomaly_min_volume
+        self.use_approximate_temporal = use_approximate_temporal if approximate else False
+        self.temporal_ml_estimators = temporal_ml_estimators
+        
         logger.info(f"Initialized optimized pipeline: n_jobs={self.n_jobs}, "
                    f"approximate={approximate}, sample_fraction={sample_fraction}")
+        logger.info(f"Temporal approximation settings: sample_size={burst_detection_sample_size}, "
+                   f"min_volume={temporal_anomaly_min_volume}, use_approximate={self.use_approximate_temporal}, "
+                   f"estimators={temporal_ml_estimators}")
         
         # Initialize optimized components
         self.data_pipeline = DataPipeline(data_path)
         self.feature_engineer = OptimizedFeatureEngineer(n_jobs=self.n_jobs, approximate=approximate)
         self.quality_scorer = OptimizedQualityScorer(approximate=approximate)
         self.similarity_model = OptimizedTrafficSimilarity(approximate=approximate)
-        self.anomaly_detector = OptimizedAnomalyDetector(approximate=approximate)
+        self.anomaly_detector = OptimizedAnomalyDetector(
+            contamination=0.1,
+            random_state=42,
+            burst_detection_sample_size=burst_detection_sample_size,
+            temporal_anomaly_min_volume=temporal_anomaly_min_volume,
+            use_approximate_temporal=self.use_approximate_temporal,
+            temporal_ml_estimators=temporal_ml_estimators
+        )
         self.evaluator = ModelEvaluator()
         self.pdf_generator = MultilingualPDFReportGenerator(output_dir)
     
