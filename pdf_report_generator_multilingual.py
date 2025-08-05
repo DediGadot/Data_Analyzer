@@ -523,10 +523,14 @@ class MultilingualPDFReportGenerator:
             plt.xticks(range(len(means)), means.index)
             box_plot = plt.gca()
         
-        # Customize colors
-        colors_list = ['#d62728', '#ff7f0e', '#ffbb78', '#2ca02c']
-        for patch, color in zip(box_plot.artists, colors_list):
-            patch.set_facecolor(color)
+        # Customize colors (only if we have actual boxplot artists)
+        try:
+            if hasattr(box_plot, 'artists') and len(box_plot.artists) > 0:
+                colors_list = ['#d62728', '#ff7f0e', '#ffbb78', '#2ca02c']
+                for patch, color in zip(box_plot.artists, colors_list):
+                    patch.set_facecolor(color)
+        except Exception as e:
+            logger.warning(f"Could not customize boxplot colors: {e}")
         
         # Set labels based on language
         if lang == 'he':
