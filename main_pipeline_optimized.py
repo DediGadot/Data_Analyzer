@@ -584,6 +584,7 @@ class OptimizedFraudDetectionPipeline:
             
             self.monitor.log_memory("data_loading")
             self.monitor.log_time("data_loading", step_start)
+            self.progress_tracker.complete_step("Data Loading")
             
             self.pipeline_results['data_loading'] = {
                 'records_loaded': len(df),
