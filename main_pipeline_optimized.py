@@ -1148,7 +1148,11 @@ def main():
         output_dir=args.output_dir,
         n_jobs=args.n_jobs,
         approximate=args.approximate,
-        sample_fraction=args.sample_fraction
+        sample_fraction=args.sample_fraction,
+        burst_detection_sample_size=args.burst_detection_sample_size,
+        temporal_anomaly_min_volume=args.temporal_anomaly_min_volume,
+        use_approximate_temporal=args.use_approximate_temporal,
+        temporal_ml_estimators=args.temporal_ml_estimators
     )
     
     try:
