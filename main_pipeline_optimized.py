@@ -710,10 +710,12 @@ class OptimizedFraudDetectionPipeline:
             # Step 8: Generate Reports
             logger.info("Step 8: Generating comprehensive reports...")
             self._generate_results_markdown(quality_results_df, {}, anomaly_results)
+            self.progress_tracker.complete_step("Report Generation")
             
             # Step 9: Generate PDF Reports
             logger.info("Step 9: Generating PDF reports...")
             pdf_report_path = self._generate_pdf_report(quality_results_df, {}, anomaly_results)
+            self.progress_tracker.complete_step("PDF Generation")
             
             logger.info("=" * 60)
             logger.info("OPTIMIZED PIPELINE COMPLETED SUCCESSFULLY")
