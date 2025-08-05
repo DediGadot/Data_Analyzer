@@ -469,28 +469,55 @@ class OptimizedAnomalyDetector:
         self.contamination = contamination
         self.base_detector = AnomalyDetector()
     
-    def detect_anomalies_fast(self, df: pd.DataFrame, sample_fraction: float = 0.1) -> pd.DataFrame:
-        """Fast anomaly detection with optional sampling"""
+    def detect_anomalies_fast(self, df: pd.DataFrame, sample_fraction: float = 0.1, progress_tracker=None) -> pd.DataFrame:
+        """Fast anomaly detection with optional sampling and progress tracking"""
         logger.info(f"Detecting anomalies with approximate={self.approximate}")
         
         if self.approximate and len(df) < 10000:
             # For very small datasets in approximate mode, create minimal synthetic results
             logger.info("Creating minimal anomaly results for small approximate dataset")
-            return self._create_minimal_anomaly_results(df)
+            if progress_tracker:
+                with progress_tracker.step_progress_bar("Anomaly Detection", total=1, desc="Creating minimal anomaly results") as pbar:
+                    results = self._create_minimal_anomaly_results(df)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Anomaly Detection", 100)
+                return results
+            else:
+                return self._create_minimal_anomaly_results(df)
         
         elif self.approximate and len(df) > 100000:
             # Use sampling for large datasets
             sample_size = int(len(df) * sample_fraction)
-            sample_df = df.sample(n=sample_size, random_state=42)
             
-            # Detect anomalies on sample
-            sample_results = self.base_detector.run_comprehensive_anomaly_detection(sample_df)
-            
-            # Extrapolate results to full dataset
-            results = self._extrapolate_anomalies(df, sample_df, sample_results)
+            if progress_tracker:
+                with progress_tracker.step_progress_bar("Anomaly Detection", total=3, desc="Processing anomaly detection") as pbar:
+                    # Step 1: Sample data
+                    sample_df = df.sample(n=sample_size, random_state=42)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Anomaly Detection", 33)
+                    
+                    # Step 2: Detect anomalies on sample
+                    sample_results = self.base_detector.run_comprehensive_anomaly_detection(sample_df)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Anomaly Detection", 66)
+                    
+                    # Step 3: Extrapolate results to full dataset
+                    results = self._extrapolate_anomalies(df, sample_df, sample_results)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Anomaly Detection", 100)
+            else:
+                sample_df = df.sample(n=sample_size, random_state=42)
+                sample_results = self.base_detector.run_comprehensive_anomaly_detection(sample_df)
+                results = self._extrapolate_anomalies(df, sample_df, sample_results)
         else:
             # Full anomaly detection
-            results = self.base_detector.run_comprehensive_anomaly_detection(df)
+            if progress_tracker:
+                with progress_tracker.step_progress_bar("Anomaly Detection", total=1, desc="Running comprehensive anomaly detection") as pbar:
+                    results = self.base_detector.run_comprehensive_anomaly_detection(df)
+                    pbar.update(1)
+                    progress_tracker.update_step_progress("Anomaly Detection", 100)
+            else:
+                results = self.base_detector.run_comprehensive_anomaly_detection(df)
         
         return results
     
