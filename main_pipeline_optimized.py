@@ -758,34 +758,52 @@ class OptimizedFraudDetectionPipeline:
                 logger.warning(f"Error during progress bar cleanup: {cleanup_error}")
     
     def _load_data_parallel(self) -> pd.DataFrame:
-        """Load data in parallel chunks"""
+        """Load data in parallel chunks with progress tracking"""
         chunk_size = 100000
         chunks = []
         
-        # Read CSV in chunks
+        # First pass to count total chunks for progress tracking
+        logger.info("Counting data chunks for progress tracking...")
+        total_chunks = 0
+        for _ in pd.read_csv(self.data_path, chunksize=chunk_size):
+            total_chunks += 1
+        
+        # Read CSV in chunks with progress tracking
         chunk_iter = pd.read_csv(self.data_path, chunksize=chunk_size)
         
-        with ThreadPoolExecutor(max_workers=self.n_jobs) as executor:
-            futures = []
-            
-            for chunk in chunk_iter:
-                # Apply sampling if requested
-                if self.sample_fraction < 1.0:
-                    chunk = chunk.sample(frac=self.sample_fraction, random_state=42)
+        with self.progress_tracker.step_progress_bar("Data Loading", total=total_chunks, desc="Loading data chunks") as pbar:
+            with ThreadPoolExecutor(max_workers=self.n_jobs) as executor:
+                futures = []
                 
-                # Submit chunk for processing
-                future = executor.submit(self._process_data_chunk, chunk)
-                futures.append(future)
-            
-            # Collect processed chunks
-            for future in tqdm(as_completed(futures), total=len(futures), desc="Loading chunks"):
-                chunks.append(future.result())
+                for chunk in chunk_iter:
+                    # Apply sampling if requested
+                    if self.sample_fraction < 1.0:
+                        chunk = chunk.sample(frac=self.sample_fraction, random_state=42)
+                    
+                    # Submit chunk for processing
+                    future = executor.submit(self._process_data_chunk, chunk)
+                    futures.append(future)
+                
+                # Collect processed chunks with progress updates
+                for i, future in enumerate(as_completed(futures)):
+                    chunks.append(future.result())
+                    pbar.update(1)
+                    
+                    # Update main progress
+                    progress_pct = ((i + 1) / len(futures)) * 100
+                    self.progress_tracker.update_step_progress("Data Loading", progress_pct)
+        
+        logger.info(f"Loaded {len(chunks)} data chunks")
         
         # Combine all chunks
-        df = pd.concat(chunks, ignore_index=True)
+        with self.progress_tracker.step_progress_bar("Data Loading", total=1, desc="Combining data chunks") as pbar:
+            df = pd.concat(chunks, ignore_index=True)
+            pbar.update(1)
         
         # Optimize datatypes for memory efficiency
-        df = self._optimize_dtypes(df)
+        with self.progress_tracker.step_progress_bar("Data Loading", total=1, desc="Optimizing data types") as pbar:
+            df = self._optimize_dtypes(df)
+            pbar.update(1)
         
         return df
     
