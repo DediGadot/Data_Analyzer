@@ -1377,10 +1377,17 @@ class MultilingualPDFReportGenerator:
                 
                 # Risk matrix
                 story.append(Paragraph(self.t('risk_matrix', lang), styles['SubsectionHeading']))
-                risk_matrix_plot = self.create_risk_matrix(quality_df, lang)
-                if risk_matrix_plot:
-                    story.append(Image(risk_matrix_plot, width=5*inch, height=4*inch))
-                    self.add_plot_description(story, 'risk_matrix', lang, styles)
+                try:
+                    risk_matrix_plot = self.create_risk_matrix(quality_df, lang)
+                    if risk_matrix_plot and os.path.exists(risk_matrix_plot):
+                        story.append(Image(risk_matrix_plot, width=5*inch, height=4*inch))
+                        self.add_plot_description(story, 'risk_matrix', lang, styles)
+                    else:
+                        logger.warning(f"Risk matrix plot not created for {lang}")
+                        story.append(Paragraph(f"[Risk matrix plot unavailable for {lang}]", styles['CustomNormal']))
+                except Exception as e:
+                    logger.error(f"Error creating risk matrix plot for {lang}: {e}")
+                    story.append(Paragraph(f"[Error creating risk matrix plot: {str(e)}]", styles['CustomNormal']))
                 
                 story.append(PageBreak())
                 
