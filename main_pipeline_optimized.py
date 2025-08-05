@@ -695,11 +695,12 @@ class OptimizedFraudDetectionPipeline:
             logger.info("Step 5: Detecting anomalies...")
             step_start = time.time()
             
-            anomaly_results = self.anomaly_detector.detect_anomalies_fast(
-                features_df, 
-                sample_fraction=0.2 if self.approximate else 1.0,
-                progress_tracker=self.progress_tracker
-            )
+            # Create progress bar for anomaly detection steps
+            with self.progress_tracker.step_progress_bar("Anomaly Detection", total=100, desc="Running optimized anomaly detection") as pbar:
+                anomaly_results = self.anomaly_detector.run_comprehensive_anomaly_detection(
+                    features_df,
+                    progress_bar=pbar
+                )
             
             self.monitor.log_memory("anomaly_detection")
             self.monitor.log_time("anomaly_detection", step_start)
