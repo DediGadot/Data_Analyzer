@@ -380,7 +380,7 @@ class OptimizedAnomalyDetector:
             channel_volumes = df.groupby('channelId').agg({
                 'date': 'count',
                 'ip': 'nunique',
-                'user': lambda x: x.nunique() if 'user' in df.columns else 0
+                'userId': lambda x: x.nunique() if 'userId' in df.columns else 0
             })
             channel_volumes.columns = ['total_requests', 'unique_ips', 'unique_users']
             volume_features.append(channel_volumes)
