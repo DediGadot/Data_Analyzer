@@ -366,12 +366,21 @@ class OptimizedAnomalyDetector:
     
     def detect_volume_anomalies(self, df: pd.DataFrame, progress_bar=None) -> pd.DataFrame:
         """
-        Detect volume-based anomalies with optimizations.
+        Detect volume-based anomalies with optimizations and robust column validation.
         """
         logger.info("Detecting volume anomalies")
         
         if progress_bar:
             progress_bar.set_description("Analyzing volume patterns")
+        
+        # Validate essential columns
+        required_cols = ['channelId', 'date']
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            logger.warning(f"Missing required columns for volume analysis: {missing_cols}")
+            return pd.DataFrame()
+        
+        logger.debug(f"Available columns for volume analysis: {list(df.columns)}")
         
         volume_features = []
         
