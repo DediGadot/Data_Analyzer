@@ -114,9 +114,28 @@ class TrafficSimilarityModel:
         # Prepare features
         X = self.prepare_features(channel_features)
         
+        # Handle empty features case
+        if X.empty or len(X.columns) == 0:
+            logger.error("No valid features available for traffic similarity analysis")
+            return {
+                'error': 'No valid features',
+                'kmeans': {'labels': [], 'silhouette_score': -1},
+                'dbscan': {'labels': [], 'n_clusters': 0, 'n_outliers': 0, 'silhouette_score': -1},
+                'hierarchical': {'labels': [], 'silhouette_score': -1}
+            }
+        
         # Scale features
         self.scaler = RobustScaler()
-        X_scaled = self.scaler.fit_transform(X)
+        try:
+            X_scaled = self.scaler.fit_transform(X)
+        except Exception as e:
+            logger.error(f"Failed to scale features: {e}")
+            return {
+                'error': f'Feature scaling failed: {e}',
+                'kmeans': {'labels': [], 'silhouette_score': -1},
+                'dbscan': {'labels': [], 'n_clusters': 0, 'n_outliers': 0, 'silhouette_score': -1},
+                'hierarchical': {'labels': [], 'silhouette_score': -1}
+            }
         
         # Store feature names
         self.feature_names = X.columns.tolist()
