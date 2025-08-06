@@ -857,19 +857,51 @@ class OptimizedFraudDetectionPipeline:
             if not similarity_success:
                 logger.warning("Traffic similarity failed, but pipeline will continue with default values")
             
-            # Step 5: Anomaly Detection with Parallel Processing
+            # Step 5: Anomaly Detection with Parallel Processing (Robust with fallback)
             logger.info("Step 5: Detecting anomalies with PARALLEL processing...")
             step_start = time.time()
             
             # Monitor CPU usage during anomaly detection (the critical parallel step)
             self.monitor.start_cpu_monitoring("anomaly_detection")
             
-            # Create progress bar for anomaly detection steps
-            with self.progress_tracker.step_progress_bar("Anomaly Detection", total=100, desc="Running PARALLEL anomaly detection") as pbar:
-                anomaly_results = self.anomaly_detector.run_comprehensive_anomaly_detection(
-                    features_df,
-                    progress_bar=pbar
-                )
+            anomaly_results = pd.DataFrame()
+            anomaly_success = False
+            
+            try:
+                # Create progress bar for anomaly detection steps
+                with self.progress_tracker.step_progress_bar("Anomaly Detection", total=100, desc="Running PARALLEL anomaly detection") as pbar:
+                    anomaly_results = self.anomaly_detector.run_comprehensive_anomaly_detection(
+                        features_df,
+                        progress_bar=pbar
+                    )
+                
+                if not anomaly_results.empty:
+                    anomaly_success = True
+                    logger.info(f"Anomaly detection completed successfully with {len(anomaly_results)} results")
+                else:
+                    logger.warning("Anomaly detection returned empty results")
+                    
+            except Exception as e:
+                logger.error(f"Anomaly detection failed: {e}")
+                import traceback
+                logger.error(f"Anomaly detection traceback: {traceback.format_exc()}")
+                
+                # Create fallback anomaly results
+                if 'channelId' in features_df.columns:
+                    unique_channels = features_df['channelId'].unique()
+                    anomaly_results = pd.DataFrame({
+                        'channelId': unique_channels,
+                        'temporal_anomaly': False,
+                        'geographic_anomaly': False,
+                        'device_anomaly': False,
+                        'behavioral_anomaly': False,
+                        'volume_anomaly': False,
+                        'overall_anomaly_count': 0,
+                        'overall_anomaly_flag': False
+                    })
+                    logger.info(f"Created fallback anomaly results for {len(unique_channels)} channels")
+                else:
+                    logger.error("Cannot create fallback anomaly results - no channelId column")
             
             # Log CPU usage for anomaly detection (should show high multi-core usage)
             self.monitor.log_cpu_usage("anomaly_detection")
@@ -880,8 +912,13 @@ class OptimizedFraudDetectionPipeline:
             self.pipeline_results['anomaly_detection'] = {
                 'entities_analyzed': len(anomaly_results),
                 'processing_time_seconds': time.time() - step_start,
-                'approximate_mode': self.approximate
+                'approximate_mode': self.approximate,
+                'success': anomaly_success,
+                'fallback_used': not anomaly_success
             }
+            
+            if not anomaly_success:
+                logger.warning("Anomaly detection failed, using fallback results with default values")
             
             # Step 6: Fraud Classification with Row-Level Scoring
             logger.info("Step 6: Performing row-level fraud classification...")
