@@ -777,13 +777,48 @@ class OptimizedAnomalyDetector:
         max_workers = min(5, cpu_count())  # Use up to 5 workers for 5 detection types
         logger.info(f"Running anomaly detection with {max_workers} parallel workers (using ThreadPoolExecutor for efficiency)")
         
-        # Define detection tasks - use lambda functions to avoid serialization issues
+        # Define detection tasks with error handling - use lambda functions to avoid serialization issues
+        def safe_temporal():
+            try:
+                return self.detect_temporal_anomalies(df.copy(), progress_bar=None)
+            except Exception as e:
+                logger.error(f"Temporal anomaly detection failed: {e}")
+                return pd.DataFrame()
+        
+        def safe_geographic():
+            try:
+                return self.detect_geographic_anomalies(df.copy(), progress_bar=None)
+            except Exception as e:
+                logger.error(f"Geographic anomaly detection failed: {e}")
+                return pd.DataFrame()
+        
+        def safe_device():
+            try:
+                return self.detect_device_anomalies(df.copy(), progress_bar=None)
+            except Exception as e:
+                logger.error(f"Device anomaly detection failed: {e}")
+                return pd.DataFrame()
+        
+        def safe_behavioral():
+            try:
+                return self.detect_behavioral_anomalies(df.copy(), progress_bar=None)
+            except Exception as e:
+                logger.error(f"Behavioral anomaly detection failed: {e}")
+                return pd.DataFrame()
+        
+        def safe_volume():
+            try:
+                return self.detect_volume_anomalies(df.copy(), progress_bar=None)
+            except Exception as e:
+                logger.error(f"Volume anomaly detection failed: {e}")
+                return pd.DataFrame()
+        
         detection_tasks = [
-            ('temporal', lambda: self.detect_temporal_anomalies(df.copy(), progress_bar=None)),
-            ('geographic', lambda: self.detect_geographic_anomalies(df.copy(), progress_bar=None)),
-            ('device', lambda: self.detect_device_anomalies(df.copy(), progress_bar=None)),
-            ('behavioral', lambda: self.detect_behavioral_anomalies(df.copy(), progress_bar=None)),
-            ('volume', lambda: self.detect_volume_anomalies(df.copy(), progress_bar=None))
+            ('temporal', safe_temporal),
+            ('geographic', safe_geographic),
+            ('device', safe_device),
+            ('behavioral', safe_behavioral),
+            ('volume', safe_volume)
         ]
         
         # Execute all detection methods in parallel using ThreadPoolExecutor
