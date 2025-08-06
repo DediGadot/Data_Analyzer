@@ -57,7 +57,7 @@ def test_behavioral_anomaly_detection():
     print("=== Testing Behavioral Anomaly Detection ===")
     
     df = create_test_data()
-    detector = OptimizedAnomalyDetector(approximate=True)
+    detector = OptimizedAnomalyDetector(use_approximate_temporal=True)
     
     try:
         # This should NOT fail with .str accessor error
@@ -81,7 +81,7 @@ def test_volume_anomaly_detection():
     print("\n=== Testing Volume Anomaly Detection ===")
     
     df = create_test_data()
-    detector = OptimizedAnomalyDetector(approximate=True)
+    detector = OptimizedAnomalyDetector(use_approximate_temporal=True)
     
     try:
         # This should NOT fail with "Column(s) ['user'] do not exist" error
@@ -105,7 +105,7 @@ def test_comprehensive_anomaly_detection():
     print("\n=== Testing Comprehensive Anomaly Detection ===")
     
     df = create_test_data()
-    detector = OptimizedAnomalyDetector(approximate=True)
+    detector = OptimizedAnomalyDetector(use_approximate_temporal=True)
     
     try:
         # This should run all anomaly detection methods
