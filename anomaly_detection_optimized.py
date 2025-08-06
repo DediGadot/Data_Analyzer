@@ -772,26 +772,28 @@ class OptimizedAnomalyDetector:
         
         results = {}
         
-        # CRITICAL FIX: Run all 5 anomaly detection methods in PARALLEL
+        # OPTIMIZED APPROACH: Use ThreadPoolExecutor to avoid serialization issues
+        # ProcessPoolExecutor has issues serializing large DataFrames and complex objects
         max_workers = min(5, cpu_count())  # Use up to 5 workers for 5 detection types
-        logger.info(f"Running anomaly detection with {max_workers} parallel workers")
+        logger.info(f"Running anomaly detection with {max_workers} parallel workers (using ThreadPoolExecutor for efficiency)")
         
-        # Define detection tasks
+        # Define detection tasks - use lambda functions to avoid serialization issues
         detection_tasks = [
-            ('temporal', self._run_temporal_detection_wrapper, df.copy()),
-            ('geographic', self._run_geographic_detection_wrapper, df.copy()),
-            ('device', self._run_device_detection_wrapper, df.copy()),
-            ('behavioral', self._run_behavioral_detection_wrapper, df.copy()),
-            ('volume', self._run_volume_detection_wrapper, df.copy())
+            ('temporal', lambda: self.detect_temporal_anomalies(df.copy(), progress_bar=None)),
+            ('geographic', lambda: self.detect_geographic_anomalies(df.copy(), progress_bar=None)),
+            ('device', lambda: self.detect_device_anomalies(df.copy(), progress_bar=None)),
+            ('behavioral', lambda: self.detect_behavioral_anomalies(df.copy(), progress_bar=None)),
+            ('volume', lambda: self.detect_volume_anomalies(df.copy(), progress_bar=None))
         ]
         
-        # Execute all detection methods in parallel
+        # Execute all detection methods in parallel using ThreadPoolExecutor
         try:
-            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 # Submit all tasks
                 future_to_detection = {}
-                for detection_type, detection_func, data in detection_tasks:
-                    future = executor.submit(detection_func, data)
+                for detection_type, detection_func in detection_tasks:
+                    future = executor.submit(detection_func)
                     future_to_detection[future] = detection_type
                 
                 # Collect results as they complete
