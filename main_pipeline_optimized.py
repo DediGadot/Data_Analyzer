@@ -1220,6 +1220,10 @@ Processing Speed: {self.pipeline_results['pipeline_summary'].get('records_per_se
 - **High-Risk Channels**: {len(quality_results[quality_results['high_risk'] == True]):,}
 - **Average Quality Score**: {quality_results['quality_score'].mean():.2f}/10
 
+## Fraud Classification Results
+
+{self._get_fraud_classification_summary()}
+
 ### Performance Breakdown
 
 | Step | Time (seconds) | Memory (MB) |
@@ -1228,6 +1232,7 @@ Processing Speed: {self.pipeline_results['pipeline_summary'].get('records_per_se
 | Feature Engineering | {self.monitor.metrics.get('feature_engineering_seconds', 0):.1f} | {self.monitor.metrics.get('feature_engineering_memory_mb', 0):.1f} |
 | Quality Scoring | {self.monitor.metrics.get('quality_scoring_seconds', 0):.1f} | {self.monitor.metrics.get('quality_scoring_memory_mb', 0):.1f} |
 | Anomaly Detection | {self.monitor.metrics.get('anomaly_detection_seconds', 0):.1f} | {self.monitor.metrics.get('anomaly_detection_memory_mb', 0):.1f} |
+| Fraud Classification | {self.monitor.metrics.get('fraud_classification_seconds', 0):.1f} | {self.monitor.metrics.get('fraud_classification_memory_mb', 0):.1f} |
 
 """
             pbar.update(1)
