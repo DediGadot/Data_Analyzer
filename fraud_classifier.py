@@ -188,12 +188,17 @@ class FraudClassifier:
         return quality_mapping
     
     def _create_anomaly_mapping(self, anomaly_results: pd.DataFrame, original_df: pd.DataFrame) -> Dict:
-        """Create anomaly mapping - handle both row-level and channel-level results"""
+        """Create anomaly mapping - handle both row-level and channel-level results with robust format handling"""
         if anomaly_results.empty:
             logger.warning("Empty anomaly results, using default values")
             return {}
         
         anomaly_mapping = {}
+        
+        # Log the structure we're working with
+        logger.info(f"Anomaly results shape: {anomaly_results.shape}")
+        logger.info(f"Anomaly results columns: {list(anomaly_results.columns)}")
+        logger.info(f"Original data shape: {original_df.shape}")
         
         # Check if anomaly results are row-level (same length as original data)
         if len(anomaly_results) == len(original_df):
@@ -201,6 +206,16 @@ class FraudClassifier:
             anomaly_mapping = anomaly_results.to_dict('index')
         elif 'channelId' in anomaly_results.columns:
             logger.info("Using channel-level anomaly results")
+            # Ensure we have the expected anomaly columns with defaults
+            expected_cols = ['temporal_anomaly', 'geographic_anomaly', 'device_anomaly', 'behavioral_anomaly', 'volume_anomaly', 'overall_anomaly_count']
+            
+            for col in expected_cols:
+                if col not in anomaly_results.columns:
+                    if col == 'overall_anomaly_count':
+                        anomaly_results[col] = 0
+                    else:
+                        anomaly_results[col] = False
+            
             anomaly_mapping = anomaly_results.set_index('channelId').to_dict('index')
         elif anomaly_results.index.name == 'channelId':
             logger.info("Using channel-level anomaly results from index")
@@ -210,6 +225,13 @@ class FraudClassifier:
             anomaly_mapping = anomaly_results.to_dict('index')
         
         logger.info(f"Created anomaly mapping for {len(anomaly_mapping)} entries")
+        
+        # Log a sample of the mapping structure
+        if anomaly_mapping:
+            sample_key = next(iter(anomaly_mapping))
+            sample_value = anomaly_mapping[sample_key]
+            logger.info(f"Sample anomaly mapping entry - Key: {sample_key}, Value columns: {list(sample_value.keys()) if isinstance(sample_value, dict) else 'Not a dict'}")
+        
         return anomaly_mapping
     
     def _classify_batch(self, 
