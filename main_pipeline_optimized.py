@@ -878,7 +878,7 @@ class OptimizedFraudDetectionPipeline:
             
             # Step 7: Model Evaluation (can be skipped in approximate mode)
             if not self.approximate or self.sample_fraction > 0.5:
-                logger.info("Step 6: Evaluating models...")
+                logger.info("Step 7: Evaluating models...")
                 step_start = time.time()
                 
                 evaluation_results = self._evaluate_models_fast(
@@ -889,11 +889,11 @@ class OptimizedFraudDetectionPipeline:
                 self.monitor.log_time("model_evaluation", step_start)
                 self.progress_tracker.complete_step("Model Evaluation")
             else:
-                logger.info("Step 6: Skipping detailed evaluation in approximate mode")
+                logger.info("Step 7: Skipping detailed evaluation in approximate mode")
                 self.progress_tracker.complete_step("Model Evaluation")
             
-            # Step 7: Generate Results
-            logger.info("Step 7: Generating final results...")
+            # Step 8: Generate Results
+            logger.info("Step 8: Generating final results...")
             self._generate_final_results(quality_results_df, {}, anomaly_results)
             self.progress_tracker.complete_step("Result Generation")
             
@@ -914,13 +914,13 @@ class OptimizedFraudDetectionPipeline:
                 'cpu_monitoring': cpu_summary
             }
             
-            # Step 8: Generate Reports
-            logger.info("Step 8: Generating comprehensive reports...")
+            # Step 9: Generate Reports
+            logger.info("Step 9: Generating comprehensive reports...")
             self._generate_results_markdown(quality_results_df, {}, anomaly_results)
             self.progress_tracker.complete_step("Report Generation")
             
-            # Step 9: Generate PDF Reports
-            logger.info("Step 9: Generating PDF reports...")
+            # Step 10: Generate PDF Reports
+            logger.info("Step 10: Generating PDF reports...")
             pdf_report_path = self._generate_pdf_report(quality_results_df, {}, anomaly_results)
             self.progress_tracker.complete_step("PDF Generation")
             
