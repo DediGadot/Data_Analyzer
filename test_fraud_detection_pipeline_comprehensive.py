@@ -412,10 +412,10 @@ class TestFraudDetectionPipeline:
         extreme_data = small_data.copy()
         
         # Create extreme bot rates
-        extreme_data['isLikelyBot'] = [0.0, 1.0, 0.0, 1.0, 0.5]
+        extreme_data['isLikelyBot'] = [0, 1, 0, 1, 0]  # Integer values
         # Create extreme IP classifications
-        extreme_data['isIpDatacenter'] = [0.0, 1.0, 0.0, 1.0, 0.5]
-        extreme_data['isIpAnonymous'] = [0.0, 1.0, 0.0, 1.0, 0.5]
+        extreme_data['isIpDatacenter'] = [0, 1, 0, 1, 0]  # Integer values
+        extreme_data['isIpAnonymous'] = [0, 1, 0, 1, 0]  # Integer values
         
         extreme_data_path = os.path.join(temp_dir, "extreme_test_data.csv")
         extreme_data.to_csv(extreme_data_path, index=False)
