@@ -1144,12 +1144,26 @@ class OptimizedFraudDetectionPipeline:
                     most_anomalous = pd.DataFrame()
                 pbar.update(1)
                 
+                # Add fraud classification summary if available
+                fraud_summary = {}
+                if hasattr(self, 'classified_results'):
+                    classified_df = self.classified_results
+                    fraud_summary = {
+                        'total_rows_classified': len(classified_df),
+                        'fraud_rows': len(classified_df[classified_df['classification'] == 'fraud']),
+                        'fraud_percentage': len(classified_df[classified_df['classification'] == 'fraud']) / len(classified_df) * 100,
+                        'avg_quality_score': classified_df['quality_score'].mean(),
+                        'avg_risk_score': classified_df['risk_score'].mean(),
+                        'classification_output_file': 'fraud_classification_results.csv'
+                    }
+                
                 # Save results
                 results = {
                     'top_quality_channels': top_quality.head(10).to_dict('records'),
                     'bottom_quality_channels': bottom_quality.head(10).to_dict('records'),
                     'high_risk_channels': high_risk.head(50).to_dict('records'),
                     'most_anomalous_channels': most_anomalous.head(20).to_dict('records') if not most_anomalous.empty else [],
+                    'fraud_classification_summary': fraud_summary,
                     'summary_stats': {
                         'total_channels': len(quality_results),
                         'high_risk_count': len(high_risk),
