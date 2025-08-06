@@ -1020,7 +1020,131 @@ class OptimizedAnomalyDetector:
         logger.info(f"PARALLEL anomaly detection complete. Analyzed {len(final_results) if final_results is not None else 0} entities")
         logger.info(f"Parallel processing enabled {max_workers}-core utilization for anomaly detection")
         
-        return final_results if final_results is not None else pd.DataFrame()
+        # Calculate overall anomaly count
+        anomaly_bool_cols = ['temporal_anomaly', 'geographic_anomaly', 'device_anomaly', 'behavioral_anomaly', 'volume_anomaly']
+        available_bool_cols = [col for col in anomaly_bool_cols if col in final_results.columns]
+        
+        if available_bool_cols:
+            final_results['overall_anomaly_count'] = final_results[available_bool_cols].sum(axis=1)
+            final_results['overall_anomaly_flag'] = final_results['overall_anomaly_count'] >= 2
+        
+        logger.info(f"Final aggregated results shape: {final_results.shape}")
+        logger.info(f"Final columns: {list(final_results.columns)}")
+        
+        return final_results
+    
+    def _merge_temporal_results(self, final_results: pd.DataFrame, temporal_df: pd.DataFrame):
+        """Merge temporal anomaly results"""
+        # Look for temporal anomaly indicators in various column names
+        temporal_cols = [col for col in temporal_df.columns if 'temporal' in col.lower() or 'hourly' in col.lower() or 'daily' in col.lower()]
+        
+        if temporal_cols:
+            # Use the first temporal column found, or create a composite
+            if 'temporal_anomaly' in temporal_df.columns:
+                temp_data = temporal_df[['channelId', 'temporal_anomaly']]
+            elif any('hourly' in col for col in temporal_cols) or any('daily' in col for col in temporal_cols):
+                # Create composite temporal anomaly from hourly/daily
+                bool_cols = [col for col in temporal_cols if temporal_df[col].dtype == bool]
+                if bool_cols:
+                    temporal_df['temporal_anomaly'] = temporal_df[bool_cols].any(axis=1)
+                    temp_data = temporal_df[['channelId', 'temporal_anomaly']]
+                else:
+                    temp_data = pd.DataFrame({'channelId': temporal_df['channelId'], 'temporal_anomaly': False})
+            else:
+                temp_data = pd.DataFrame({'channelId': temporal_df['channelId'], 'temporal_anomaly': False})
+        else:
+            temp_data = pd.DataFrame({'channelId': temporal_df['channelId'], 'temporal_anomaly': False})
+        
+        # Merge with final results
+        final_results.set_index('channelId', inplace=True)
+        temp_data.set_index('channelId', inplace=True)
+        final_results.update(temp_data)
+        final_results.reset_index(inplace=True)
+    
+    def _merge_geographic_results(self, final_results: pd.DataFrame, geo_df: pd.DataFrame):
+        """Merge geographic anomaly results"""
+        if 'geo_anomaly' in geo_df.columns:
+            geo_data = geo_df[['channelId', 'geo_anomaly']].copy()
+            geo_data.rename(columns={'geo_anomaly': 'geographic_anomaly'}, inplace=True)
+        elif 'geographic_anomaly' in geo_df.columns:
+            geo_data = geo_df[['channelId', 'geographic_anomaly']]
+        elif 'geo_is_anomaly' in geo_df.columns:
+            geo_data = geo_df[['channelId', 'geo_is_anomaly']].copy()
+            geo_data.rename(columns={'geo_is_anomaly': 'geographic_anomaly'}, inplace=True)
+        else:
+            geo_data = pd.DataFrame({'channelId': geo_df['channelId'], 'geographic_anomaly': False})
+        
+        final_results.set_index('channelId', inplace=True)
+        geo_data.set_index('channelId', inplace=True)
+        final_results.update(geo_data)
+        final_results.reset_index(inplace=True)
+    
+    def _merge_device_results(self, final_results: pd.DataFrame, device_df: pd.DataFrame):
+        """Merge device anomaly results"""
+        # Look for device ensemble or individual device anomaly columns
+        if 'device_anomaly_ensemble' in device_df.columns:
+            device_data = device_df[['channelId', 'device_anomaly_ensemble']].copy()
+            device_data.rename(columns={'device_anomaly_ensemble': 'device_anomaly'}, inplace=True)
+        elif 'device_anomaly' in device_df.columns:
+            device_data = device_df[['channelId', 'device_anomaly']]
+        else:
+            # Create composite from individual device detection methods
+            device_cols = [col for col in device_df.columns if 'device' in col.lower() and 'anomaly' in col.lower()]
+            if device_cols:
+                device_df['device_anomaly'] = device_df[device_cols].any(axis=1)
+                device_data = device_df[['channelId', 'device_anomaly']]
+            else:
+                device_data = pd.DataFrame({'channelId': device_df['channelId'], 'device_anomaly': False})
+        
+        final_results.set_index('channelId', inplace=True)
+        device_data.set_index('channelId', inplace=True)
+        final_results.update(device_data)
+        final_results.reset_index(inplace=True)
+    
+    def _merge_behavioral_results(self, final_results: pd.DataFrame, behavioral_df: pd.DataFrame):
+        """Merge behavioral anomaly results"""
+        if 'behavioral_anomaly_ensemble' in behavioral_df.columns:
+            behavioral_data = behavioral_df[['channelId', 'behavioral_anomaly_ensemble']].copy()
+            behavioral_data.rename(columns={'behavioral_anomaly_ensemble': 'behavioral_anomaly'}, inplace=True)
+        elif 'behavioral_anomaly' in behavioral_df.columns:
+            behavioral_data = behavioral_df[['channelId', 'behavioral_anomaly']]
+        else:
+            # Create composite from individual behavioral detection methods
+            behavioral_cols = [col for col in behavioral_df.columns if 'behavioral' in col.lower() and 'anomaly' in col.lower()]
+            if behavioral_cols:
+                behavioral_df['behavioral_anomaly'] = behavioral_df[behavioral_cols].any(axis=1)
+                behavioral_data = behavioral_df[['channelId', 'behavioral_anomaly']]
+            else:
+                behavioral_data = pd.DataFrame({'channelId': behavioral_df['channelId'], 'behavioral_anomaly': False})
+        
+        final_results.set_index('channelId', inplace=True)
+        behavioral_data.set_index('channelId', inplace=True)
+        final_results.update(behavioral_data)
+        final_results.reset_index(inplace=True)
+    
+    def _merge_volume_results(self, final_results: pd.DataFrame, volume_df: pd.DataFrame):
+        """Merge volume anomaly results"""
+        # Look for any volume-related anomaly indicators
+        volume_cols = [col for col in volume_df.columns if 'volume' in col.lower() and 'anomaly' in col.lower()]
+        if volume_cols:
+            # Use any column or create composite
+            if 'volume_anomaly' in volume_df.columns:
+                volume_data = volume_df[['channelId', 'volume_anomaly']]
+            else:
+                # Create composite from volume-related anomaly columns
+                bool_cols = [col for col in volume_cols if volume_df[col].dtype == bool]
+                if bool_cols:
+                    volume_df['volume_anomaly'] = volume_df[bool_cols].any(axis=1)
+                    volume_data = volume_df[['channelId', 'volume_anomaly']]
+                else:
+                    volume_data = pd.DataFrame({'channelId': volume_df['channelId'], 'volume_anomaly': False})
+        else:
+            volume_data = pd.DataFrame({'channelId': volume_df['channelId'], 'volume_anomaly': False})
+        
+        final_results.set_index('channelId', inplace=True)
+        volume_data.set_index('channelId', inplace=True)
+        final_results.update(volume_data)
+        final_results.reset_index(inplace=True)
     
     def _run_temporal_detection_wrapper(self, df: pd.DataFrame) -> pd.DataFrame:
         """Wrapper for temporal anomaly detection to be used in parallel processing"""
