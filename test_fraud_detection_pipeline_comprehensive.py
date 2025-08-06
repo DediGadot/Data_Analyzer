@@ -99,7 +99,6 @@ class TestDataGenerator:
         countries = ["US", "DE", "FR", "GB", "CA", "AU", "NL", "SE", "DK", "NO"]
         browsers = ["chrome", "firefox", "safari", "edge", "opera"]
         devices = ["notMobile", "mobile", "tablet"]
-        ip_classifications = ["unrecognized", "residential", "business", "datacenter", "vpn"]
         
         data = []
         
