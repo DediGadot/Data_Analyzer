@@ -766,7 +766,11 @@ class OptimizedFraudDetectionPipeline:
                 'memory_usage_mb': self.monitor.metrics.get('feature_engineering_memory_mb', 0)
             }
             
-            # Clean up original dataframe
+            # Store original dataframe for classification (keep essential columns only)
+            original_df = df[['date', 'keyword', 'country', 'browser', 'device', 'ip', 'publisherId', 'channelId', 
+                             'advertiserId', 'feedId', 'userId', 'isLikelyBot', 'ipClassification', 
+                             'isIpDatacenter', 'isIpAnonymous']].copy()
+            # Clean up main dataframe
             del df
             gc.collect()
             
@@ -828,7 +832,51 @@ class OptimizedFraudDetectionPipeline:
                 'approximate_mode': self.approximate
             }
             
-            # Step 6: Model Evaluation (can be skipped in approximate mode)
+            # Step 6: Fraud Classification with Row-Level Scoring
+            logger.info("Step 6: Performing row-level fraud classification...")
+            step_start = time.time()
+            
+            with self.progress_tracker.step_progress_bar("Fraud Classification", total=1, desc="Classifying fraud patterns") as pbar:
+                # Generate enhanced classification results CSV
+                classified_df = self.fraud_classifier.classify_dataset(
+                    original_df, quality_results_df, anomaly_results, features_df
+                )
+                pbar.update(1)
+            
+            # Save enhanced classification results
+            classification_output_path = os.path.join(self.output_dir, "fraud_classification_results.csv")
+            classified_df.to_csv(classification_output_path, index=False)
+            
+            self.monitor.log_memory("fraud_classification")
+            self.monitor.log_time("fraud_classification", step_start)
+            self.progress_tracker.complete_step("Fraud Classification")
+            
+            # Classification summary
+            fraud_count = len(classified_df[classified_df['classification'] == 'fraud'])
+            total_count = len(classified_df)
+            
+            self.pipeline_results['fraud_classification'] = {
+                'total_rows_classified': total_count,
+                'fraud_rows': fraud_count,
+                'fraud_percentage': (fraud_count / total_count) * 100,
+                'output_file': classification_output_path,
+                'average_quality_score': classified_df['quality_score'].mean(),
+                'average_risk_score': classified_df['risk_score'].mean(),
+                'processing_time_seconds': time.time() - step_start,
+                'classification_thresholds': self.fraud_classifier.get_classification_thresholds()
+            }
+            
+            logger.info(f"Fraud classification completed: {fraud_count}/{total_count} ({fraud_count/total_count*100:.1f}%) flagged as fraud")
+            logger.info(f"Results saved to: {classification_output_path}")
+            
+            # Store classified results for later use
+            self.classified_results = classified_df
+            
+            # Clean up original_df to save memory
+            del original_df
+            gc.collect()
+            
+            # Step 7: Model Evaluation (can be skipped in approximate mode)
             if not self.approximate or self.sample_fraction > 0.5:
                 logger.info("Step 6: Evaluating models...")
                 step_start = time.time()
