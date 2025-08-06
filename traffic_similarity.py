@@ -111,18 +111,27 @@ class TrafficSimilarityModel:
         """
         logger.info("Fitting traffic similarity models")
         
-        # Prepare features
-        X = self.prepare_features(channel_features)
+        # Early validation of input
+        if channel_features.empty:
+            logger.warning("Empty channel_features provided to traffic similarity model")
+            return self._create_empty_results()
         
-        # Handle empty features case
-        if X.empty or len(X.columns) == 0:
-            logger.error("No valid features available for traffic similarity analysis")
-            return {
-                'error': 'No valid features',
-                'kmeans': {'labels': [], 'silhouette_score': -1},
-                'dbscan': {'labels': [], 'n_clusters': 0, 'n_outliers': 0, 'silhouette_score': -1},
-                'hierarchical': {'labels': [], 'silhouette_score': -1}
-            }
+        # Prepare features with robust error handling
+        try:
+            X = self.prepare_features(channel_features)
+        except Exception as e:
+            logger.error(f"Feature preparation failed: {e}")
+            return self._create_empty_results()
+        
+        # Handle empty features case with more comprehensive checks
+        if X.empty or len(X.columns) == 0 or len(X) == 0:
+            logger.warning("No valid features available for traffic similarity analysis")
+            return self._create_empty_results()
+        
+        # Check if we have enough data points for clustering
+        if len(X) < 2:
+            logger.warning(f"Insufficient data for clustering: only {len(X)} samples")
+            return self._create_empty_results()
         
         # Scale features
         self.scaler = RobustScaler()
