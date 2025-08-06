@@ -766,10 +766,9 @@ class OptimizedFraudDetectionPipeline:
                 'memory_usage_mb': self.monitor.metrics.get('feature_engineering_memory_mb', 0)
             }
             
-            # Store original dataframe for classification (keep essential columns only)
-            original_df = df[['date', 'keyword', 'country', 'browser', 'device', 'ip', 'publisherId', 'channelId', 
-                             'advertiserId', 'feedId', 'userId', 'isLikelyBot', 'ipClassification', 
-                             'isIpDatacenter', 'isIpAnonymous']].copy()
+            # Store original dataframe for classification (preserve ALL original columns)
+            original_df = df.copy()
+            logger.info(f"Preserved original dataframe with {original_df.shape[1]} columns for classification")
             # Clean up main dataframe
             del df
             gc.collect()
