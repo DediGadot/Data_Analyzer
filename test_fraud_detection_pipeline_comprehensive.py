@@ -126,16 +126,31 @@ class TestDataGenerator:
                 'country': np.random.choice(countries),
                 'browser': np.random.choice(browsers),
                 'device': np.random.choice(devices),
+                'referrer': np.random.choice(referrers),
                 'ip': self._generate_ip(),
                 'publisherId': np.random.choice(publisher_ids),
                 'channelId': channel_id,
                 'advertiserId': np.random.choice(advertiser_ids),
                 'feedId': np.random.choice(feed_ids),
+                'browserMajorVersion': np.random.randint(80, 120),  # Realistic browser versions
                 'userId': f"{uuid.uuid4()}",
                 'isLikelyBot': is_bot,
                 'ipClassification': np.random.choice(ip_classifications),
                 'isIpDatacenter': ip_datacenter,
+                'datacenterName': np.random.choice(datacenter_names),
+                'ipHostName': f"host{np.random.randint(1, 1000)}.example.com" if np.random.random() < 0.3 else "",
                 'isIpAnonymous': ip_anonymous,
+                'isIpCrawler': int(np.random.random() < 0.02),  # 2% crawlers
+                'isIpPublicProxy': int(np.random.random() < 0.03),  # 3% public proxies
+                'isIpVPN': int(np.random.random() < 0.05),  # 5% VPN
+                'isIpHostingService': int(np.random.random() < 0.04),  # 4% hosting
+                'isIpTOR': int(np.random.random() < 0.001),  # 0.1% TOR
+                'isIpResidentialProxy': int(np.random.random() < 0.02),  # 2% residential proxy
+                'performance': np.random.randint(50, 500),  # Performance metric in ms
+                'detection': np.random.choice(["clean", "suspicious", "fraud"]),
+                'platform': np.random.choice(platforms),
+                'location': f"City{np.random.randint(1, 100)}",
+                'userAgent': np.random.choice(user_agents),
                 '_original_index': i
             }
             
