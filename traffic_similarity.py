@@ -37,7 +37,7 @@ class TrafficSimilarityModel:
         
     def prepare_features(self, channel_features: pd.DataFrame) -> pd.DataFrame:
         """
-        Prepare channel features for similarity analysis.
+        Prepare channel features for similarity analysis with robust error handling.
         
         Args:
             channel_features: DataFrame with channel-level aggregated features
@@ -47,29 +47,56 @@ class TrafficSimilarityModel:
         """
         logger.info("Preparing features for similarity analysis")
         
+        if channel_features.empty:
+            logger.warning("Empty channel_features DataFrame provided")
+            return pd.DataFrame()
+        
         # Remove non-numeric columns and handle missing values
         numeric_features = channel_features.select_dtypes(include=[np.number])
+        
+        if numeric_features.empty:
+            logger.warning("No numeric features found in channel_features")
+            return pd.DataFrame()
+        
         numeric_features = numeric_features.fillna(numeric_features.median())
         
-        # Remove features with low variance
+        # Remove features with low variance (with safety check)
         variance_threshold = 0.01
         feature_variances = numeric_features.var()
         high_variance_features = feature_variances[feature_variances > variance_threshold].index
+        
+        if len(high_variance_features) == 0:
+            logger.warning(f"All features have variance <= {variance_threshold}. Using all features with fallback variance threshold.")
+            # Fallback: use all features if none meet the variance threshold
+            high_variance_features = numeric_features.columns
+        
         numeric_features = numeric_features[high_variance_features]
         
-        # Remove highly correlated features
-        correlation_matrix = numeric_features.corr().abs()
-        upper_triangle = correlation_matrix.where(
-            np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool)
-        )
+        # Remove highly correlated features (with safety check)
+        if len(numeric_features.columns) > 1:
+            correlation_matrix = numeric_features.corr().abs()
+            upper_triangle = correlation_matrix.where(
+                np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool)
+            )
+            
+            high_corr_features = [
+                column for column in upper_triangle.columns 
+                if any(upper_triangle[column] > 0.95)
+            ]
+            
+            # Keep at least one feature even if highly correlated
+            if len(high_corr_features) < len(numeric_features.columns):
+                numeric_features = numeric_features.drop(columns=high_corr_features)
+            else:
+                logger.warning("All features are highly correlated. Keeping first feature as fallback.")
+                numeric_features = numeric_features.iloc[:, [0]]
         
-        high_corr_features = [
-            column for column in upper_triangle.columns 
-            if any(upper_triangle[column] > 0.95)
-        ]
-        numeric_features = numeric_features.drop(columns=high_corr_features)
+        # Final safety check
+        if numeric_features.empty or len(numeric_features.columns) == 0:
+            logger.error("No valid features remain after preprocessing")
+            return pd.DataFrame()
         
-        logger.info(f"Feature preparation complete. Using {numeric_features.shape[1]} features")
+        logger.info(f"Feature preparation complete. Using {numeric_features.shape[1]} features out of {channel_features.shape[1]} original columns")
         return numeric_features
     
     def fit(self, channel_features: pd.DataFrame) -> Dict:
