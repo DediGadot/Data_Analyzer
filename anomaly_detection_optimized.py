@@ -642,8 +642,17 @@ class OptimizedAnomalyDetector:
         return version_analysis.reset_index()
     
     def _extract_behavioral_features_optimized(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Optimized behavioral feature extraction."""
+        """Optimized behavioral feature extraction with robust column validation."""
         behavioral_features = []
+        
+        # Validate essential columns
+        required_cols = ['channelId']
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            logger.warning(f"Missing required columns for behavioral analysis: {missing_cols}")
+            return pd.DataFrame()
+        
+        logger.debug(f"Available columns for behavioral analysis: {list(df.columns)}")
         
         # Optimized request timing patterns
         if 'date' in df.columns:
