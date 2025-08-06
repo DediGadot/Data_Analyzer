@@ -10,7 +10,7 @@ This test suite covers:
 5. Performance Testing with synthetic data
 """
 
-import pytest
+# import pytest  # Not needed for manual testing
 import pandas as pd
 import numpy as np
 import os
