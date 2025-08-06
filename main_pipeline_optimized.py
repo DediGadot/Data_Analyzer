@@ -1066,31 +1066,98 @@ class OptimizedFraudDetectionPipeline:
         return df
     
     def _create_channel_features_fast(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Create channel-level features efficiently"""
+        """Create channel-level features efficiently with robust column validation"""
+        logger.info(f"Creating channel features from DataFrame with {len(df)} rows and columns: {list(df.columns)}")
+        
+        if df.empty or 'channelId' not in df.columns:
+            logger.warning("DataFrame is empty or missing 'channelId' column")
+            return pd.DataFrame()
+        
         # Use optimized groupby operations
         channel_groups = df.groupby('channelId')
         
-        # Parallel aggregation
-        agg_funcs = {
-            'volume': 'size',
-            'bot_rate': lambda x: x['is_bot'].mean() if 'is_bot' in x.columns else 0,
-            'ip_diversity': lambda x: x['ip'].nunique() if 'ip' in x.columns else 0,
-            'hour_diversity': lambda x: x['hour'].nunique() if 'hour' in x.columns else 0
-        }
+        # Build aggregation functions based on available columns
+        agg_funcs = {'volume': 'size'}  # Always available
         
-        if self.approximate:
-            # Use sampling for large groups
-            sample_size = 1000
-            channel_features = channel_groups.apply(
-                lambda x: pd.Series({
-                    k: v(x.sample(min(len(x), sample_size))) if callable(v) else len(x) if v == 'size' else x[v].iloc[0]
-                    for k, v in agg_funcs.items()
-                })
-            )
+        # Add conditional aggregations based on available columns
+        if 'is_bot' in df.columns:
+            agg_funcs['bot_rate'] = lambda x: x['is_bot'].mean()
         else:
-            channel_features = channel_groups.agg(agg_funcs)
+            logger.debug("Column 'is_bot' not available, using default bot_rate=0")
+            
+        if 'ip' in df.columns:
+            agg_funcs['ip_diversity'] = lambda x: x['ip'].nunique()
+        else:
+            logger.debug("Column 'ip' not available, using default ip_diversity=1")
+            
+        if 'hour' in df.columns:
+            agg_funcs['hour_diversity'] = lambda x: x['hour'].nunique()
+        else:
+            logger.debug("Column 'hour' not available, using default hour_diversity=1")
         
+        # Add more features if available
+        available_cols = df.columns.tolist()
+        if 'day_of_week' in available_cols:
+            agg_funcs['day_diversity'] = lambda x: x['day_of_week'].nunique()
+        if 'device' in available_cols:
+            agg_funcs['device_diversity'] = lambda x: x['device'].nunique()
+        if 'browser' in available_cols:
+            agg_funcs['browser_diversity'] = lambda x: x['browser'].nunique()
+        
+        logger.info(f"Using aggregation functions: {list(agg_funcs.keys())}")
+        
+        try:
+            if self.approximate:
+                # Use sampling for large groups
+                sample_size = 1000
+                channel_features = channel_groups.apply(
+                    lambda x: pd.Series({
+                        k: v(x.sample(min(len(x), sample_size))) if callable(v) else len(x) if v == 'size' else x[v].iloc[0]
+                        for k, v in agg_funcs.items()
+                    })
+                )
+            else:
+                channel_features = channel_groups.agg(agg_funcs)
+            
+            # Add default values for missing features
+            if 'bot_rate' not in channel_features.columns:
+                channel_features['bot_rate'] = 0.0
+            if 'ip_diversity' not in channel_features.columns:
+                channel_features['ip_diversity'] = 1.0
+            if 'hour_diversity' not in channel_features.columns:
+                channel_features['hour_diversity'] = 1.0
+                
+        except Exception as e:
+            logger.error(f"Error in channel features aggregation: {e}")
+            # Create fallback features
+            unique_channels = df['channelId'].unique()
+            channel_features = pd.DataFrame({
+                'channelId': unique_channels,
+                'volume': df['channelId'].value_counts().reindex(unique_channels, fill_value=1).values,
+                'bot_rate': 0.0,
+                'ip_diversity': 1.0,
+                'hour_diversity': 1.0
+            })
+            return channel_features
+        
+        # Reset index to make channelId a column
         channel_features = channel_features.reset_index()
+        
+        # Validate result
+        if channel_features.empty:
+            logger.warning("Channel features aggregation resulted in empty DataFrame")
+            unique_channels = df['channelId'].unique()
+            channel_features = pd.DataFrame({
+                'channelId': unique_channels,
+                'volume': [1] * len(unique_channels),
+                'bot_rate': [0.0] * len(unique_channels),
+                'ip_diversity': [1.0] * len(unique_channels),
+                'hour_diversity': [1.0] * len(unique_channels)
+            })
+        
+        logger.info(f"Created channel features: {channel_features.shape[0]} channels, {channel_features.shape[1]} features")
+        logger.debug(f"Channel features columns: {list(channel_features.columns)}")
+        
         return channel_features
     
     def _evaluate_models_fast(self, features_df: pd.DataFrame, 
