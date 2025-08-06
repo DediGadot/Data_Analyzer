@@ -681,6 +681,16 @@ class OptimizedTrafficSimilarity:
             'num_channels': len(features),
             'similarity_threshold': 0.5
         }
+    
+    def _create_fallback_similarity_results(self, num_channels: int) -> Dict:
+        """Create fallback results when similarity computation fails"""
+        return {
+            'error': 'Similarity computation failed or insufficient data',
+            'similar_pairs': [],
+            'num_channels': num_channels,
+            'similarity_threshold': 0.5,
+            'fallback': True
+        }
 
 class OptimizedFraudDetectionPipeline:
     """
