@@ -1245,6 +1245,32 @@ Processing Speed: {self.pipeline_results['pipeline_summary'].get('records_per_se
             
         logger.info(f"Results report saved to {results_path}")
     
+    def _get_fraud_classification_summary(self) -> str:
+        """Get fraud classification summary for markdown report"""
+        if not hasattr(self, 'pipeline_results') or 'fraud_classification' not in self.pipeline_results:
+            return "- No fraud classification results available"
+        
+        fraud_results = self.pipeline_results['fraud_classification']
+        
+        summary = f"""- **Total Rows Classified**: {fraud_results.get('total_rows_classified', 0):,}
+- **Fraud Detected**: {fraud_results.get('fraud_rows', 0):,} ({fraud_results.get('fraud_percentage', 0):.1f}%)
+- **Average Quality Score**: {fraud_results.get('average_quality_score', 0):.2f}/10
+- **Average Risk Score**: {fraud_results.get('average_risk_score', 0):.3f}
+- **Output File**: `{fraud_results.get('output_file', 'N/A')}`
+
+### Classification Thresholds Used
+
+"""
+        
+        if 'classification_thresholds' in fraud_results:
+            thresholds = fraud_results['classification_thresholds']
+            summary += f"""- Quality Threshold (Low): {thresholds.get('quality_threshold_low', 'N/A')}
+- Quality Threshold (High): {thresholds.get('quality_threshold_high', 'N/A')}
+- Anomaly Threshold: {thresholds.get('anomaly_threshold_high', 'N/A')}
+- Risk Threshold: {thresholds.get('risk_threshold', 'N/A')}"""
+        
+        return summary
+    
     def _generate_pdf_report(self, quality_results: pd.DataFrame,
                            cluster_profiles: Dict,
                            anomaly_results: pd.DataFrame) -> str:
