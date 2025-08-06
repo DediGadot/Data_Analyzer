@@ -662,7 +662,7 @@ class OptimizedAnomalyDetector:
         if 'keyword' in df.columns:
             keyword_features = df.groupby('channelId')['keyword'].agg([
                 'nunique',
-                lambda x: x.str.len().mean(),
+                lambda x: x.astype(str).str.len().mean() if len(x) > 0 else 0,  # Safe string operation
                 lambda x: x.value_counts().iloc[0] / len(x) if len(x) > 0 else 0
             ])
             keyword_features.columns = ['keyword_diversity', 'avg_keyword_length', 'dominant_keyword_pct']
