@@ -269,6 +269,18 @@ class TrafficSimilarityModel:
         
         return feature_importance
     
+    def _create_empty_results(self) -> Dict:
+        """Create standardized empty results for error cases"""
+        return {
+            'error': 'No valid features or insufficient data',
+            'similar_pairs': [],
+            'num_channels': 0,
+            'similarity_threshold': 0.5,
+            'kmeans': {'labels': [], 'silhouette_score': -1},
+            'dbscan': {'labels': [], 'n_clusters': 0, 'n_outliers': 0, 'silhouette_score': -1},
+            'hierarchical': {'labels': [], 'silhouette_score': -1}
+        }
+    
     def find_similar_channels(self, channel_id: str, channel_features: pd.DataFrame, 
                             method: str = 'kmeans', n_similar: int = 5) -> List[Tuple[str, float]]:
         """
