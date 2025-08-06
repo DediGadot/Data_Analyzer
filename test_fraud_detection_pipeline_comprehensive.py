@@ -98,15 +98,15 @@ class TestDataGenerator:
             if include_edge_cases and i < n_rows * 0.1:  # 10% edge cases
                 # Suspicious patterns
                 keyword = np.random.choice(["click here now", "make money fast", "free gift card"])
-                is_bot = np.random.choice([0.8, 0.9, 1.0])  # High bot probability
-                ip_datacenter = np.random.choice([0.7, 0.8, 0.9])  # Likely datacenter
-                ip_anonymous = np.random.choice([0.6, 0.7, 0.8])  # Likely anonymous
+                is_bot = np.random.choice([0, 1])  # Integer values for boolean field
+                ip_datacenter = np.random.choice([0, 1])  # Integer values for boolean field
+                ip_anonymous = np.random.choice([0, 1])  # Integer values for boolean field
             else:
                 # Normal patterns
                 keyword = np.random.choice(keywords)
-                is_bot = np.random.beta(0.5, 2)  # Skewed toward low bot probability
-                ip_datacenter = np.random.beta(0.3, 3)  # Skewed toward not datacenter
-                ip_anonymous = np.random.beta(0.2, 4)  # Skewed toward not anonymous
+                is_bot = int(np.random.random() < 0.1)  # 10% chance of being bot (integer 0/1)
+                ip_datacenter = int(np.random.random() < 0.05)  # 5% chance of datacenter (integer 0/1)
+                ip_anonymous = int(np.random.random() < 0.03)  # 3% chance of anonymous (integer 0/1)
             
             row = {
                 'date': dates[i].strftime('%Y-%m-%d %H:%M:%S.%f UTC'),
