@@ -147,9 +147,25 @@ class OptimizedAnomalyDetector:
         """
         logger.info("Detecting geographic anomalies")
         
+        # Input validation
+        if df.empty:
+            logger.warning("Empty DataFrame provided for geographic anomaly detection")
+            return pd.DataFrame()
+        
+        if 'channelId' not in df.columns:
+            logger.error("Missing 'channelId' column for geographic anomaly detection")
+            return pd.DataFrame()
+        
         if 'country' not in df.columns:
             logger.warning("No country data available for geographic anomaly detection")
-            return pd.DataFrame()
+            # Return empty result with consistent format
+            return pd.DataFrame({
+                'channelId': df['channelId'].unique() if 'channelId' in df.columns else [],
+                'geo_anomaly_score': 0.0,
+                'geo_is_anomaly': False,
+                'country_diversity': 1,
+                'dominant_country_pct': 1.0
+            })
         
         if progress_bar:
             progress_bar.set_description("Analyzing country patterns")
