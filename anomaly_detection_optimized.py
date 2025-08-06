@@ -913,17 +913,42 @@ class OptimizedAnomalyDetector:
             progress_bar.n = 90  # 90% complete
             progress_bar.refresh()
         
-        # Merge all results
+        # Merge all results with robust error handling
         final_results = None
+        all_channel_ids = set()
+        
+        # First, collect all unique channel IDs from all results
         for anomaly_type, result_df in results.items():
-            if final_results is None:
-                final_results = result_df.copy()
-            else:
-                # Merge on common identifier (channelId or index)
-                if 'channelId' in result_df.columns and 'channelId' in final_results.columns:
-                    final_results = final_results.merge(result_df, on='channelId', how='outer')
+            if not result_df.empty and 'channelId' in result_df.columns:
+                all_channel_ids.update(result_df['channelId'].unique())
+        
+        # If no channel IDs found, use original DataFrame
+        if not all_channel_ids and 'channelId' in df.columns:
+            all_channel_ids = set(df['channelId'].unique())
+        
+        # Create base DataFrame with all channel IDs
+        if all_channel_ids:
+            final_results = pd.DataFrame({'channelId': list(all_channel_ids)})
+        
+        # Merge each result DataFrame
+        for anomaly_type, result_df in results.items():
+            if result_df.empty:
+                logger.warning(f"Empty result for {anomaly_type} anomaly detection")
+                continue
+            
+            try:
+                if final_results is None:
+                    final_results = result_df.copy()
                 else:
-                    final_results = final_results.merge(result_df, left_index=True, right_index=True, how='outer')
+                    # Ensure consistent merge key
+                    if 'channelId' in result_df.columns and 'channelId' in final_results.columns:
+                        final_results = final_results.merge(result_df, on='channelId', how='outer')
+                    else:
+                        logger.warning(f"Cannot merge {anomaly_type} results - missing channelId column")
+                        continue
+            except Exception as e:
+                logger.error(f"Failed to merge {anomaly_type} results: {e}")
+                continue
         
         # Create overall anomaly score
         if final_results is not None:
