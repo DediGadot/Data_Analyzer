@@ -147,7 +147,6 @@ class TestDataGenerator:
 class TestFraudDetectionPipeline:
     """Comprehensive test suite for the fraud detection pipeline."""
     
-    @pytest.fixture(scope="class")
     def test_setup(self):
         """Set up test environment with temporary directory and synthetic data."""
         # Create temporary directory for test outputs
