@@ -825,11 +825,23 @@ class OptimizedFraudDetectionPipeline:
                 'approximate_mode': self.approximate
             }
             
-            # Step 4: Traffic Similarity with LSH
+            # Step 4: Traffic Similarity with LSH (Non-blocking with fallback)
             logger.info("Step 4: Computing traffic similarity...")
             step_start = time.time()
             
-            similarity_results = self.similarity_model.compute_similarity_fast(channel_features, progress_tracker=self.progress_tracker)
+            try:
+                similarity_results = self.similarity_model.compute_similarity_fast(channel_features, progress_tracker=self.progress_tracker)
+                similarity_success = not similarity_results.get('error', False)
+            except Exception as e:
+                logger.error(f"Traffic similarity computation failed: {e}")
+                similarity_results = {
+                    'error': f'Traffic similarity failed: {e}',
+                    'similar_pairs': [],
+                    'num_channels': len(channel_features) if not channel_features.empty else 0,
+                    'similarity_threshold': 0.5,
+                    'fallback': True
+                }
+                similarity_success = False
             
             self.monitor.log_memory("traffic_similarity")
             self.monitor.log_time("traffic_similarity", step_start)
@@ -838,8 +850,12 @@ class OptimizedFraudDetectionPipeline:
             self.pipeline_results['traffic_similarity'] = {
                 'similarity_results': similarity_results,
                 'processing_time_seconds': time.time() - step_start,
-                'approximate_mode': self.approximate
+                'approximate_mode': self.approximate,
+                'success': similarity_success
             }
+            
+            if not similarity_success:
+                logger.warning("Traffic similarity failed, but pipeline will continue with default values")
             
             # Step 5: Anomaly Detection with Parallel Processing
             logger.info("Step 5: Detecting anomalies with PARALLEL processing...")
