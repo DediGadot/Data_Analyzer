@@ -74,6 +74,19 @@ class TestDataGenerator:
         advertiser_ids = [f"{uuid.uuid4()}" for _ in range(n_advertisers)]
         feed_ids = [f"{uuid.uuid4()}" for _ in range(n_feeds)]
         
+        # Additional data for full column compatibility
+        referrers = ["https://google.com", "https://facebook.com", "https://twitter.com", "direct", ""]
+        ip_classifications = ["unrecognized", "residential", "business", "datacenter", "vpn"]
+        datacenter_names = ["", "AWS", "Google Cloud", "Azure", "Cloudflare"]
+        platforms = ["Windows", "macOS", "Linux", "Android", "iOS"]
+        user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+            "Mozilla/5.0 (Android 11; Mobile; rv:68.0) Gecko/68.0 Firefox/88.0",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15"
+        ]
+        
         # Keywords - mix of legitimate and suspicious patterns
         keywords = [
             "employee management software", "investment opportunities", "crypto trading", 
