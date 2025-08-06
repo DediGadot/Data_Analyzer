@@ -76,8 +76,25 @@ class OptimizedAnomalyDetector:
         """
         logger.info("Detecting temporal anomalies with optimizations")
         
-        df = df.copy()
-        df['date'] = pd.to_datetime(df['date'])
+        # Input validation
+        if df.empty:
+            logger.warning("Empty DataFrame provided for temporal anomaly detection")
+            return pd.DataFrame()
+        
+        if 'channelId' not in df.columns:
+            logger.error("Missing 'channelId' column for temporal anomaly detection")
+            return pd.DataFrame()
+        
+        if 'date' not in df.columns:
+            logger.error("Missing 'date' column for temporal anomaly detection")
+            return pd.DataFrame()
+        
+        try:
+            df = df.copy()
+            df['date'] = pd.to_datetime(df['date'])
+        except Exception as e:
+            logger.error(f"Failed to convert 'date' column to datetime: {e}")
+            return pd.DataFrame()
         
         # Early filtering for low-volume entities
         if self.use_approximate_temporal:
