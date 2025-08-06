@@ -913,41 +913,96 @@ class OptimizedAnomalyDetector:
             progress_bar.n = 90  # 90% complete
             progress_bar.refresh()
         
-        # Merge all results with robust error handling
-        final_results = None
-        all_channel_ids = set()
+        # Improved result aggregation with consistent channelId handling
+        final_results = self._aggregate_anomaly_results(results, df)
         
-        # First, collect all unique channel IDs from all results
+        if progress_bar:
+            progress_bar.set_description("Parallel anomaly detection complete")
+            progress_bar.n = 100
+            progress_bar.refresh()
+        
+        logger.info(f"PARALLEL anomaly detection complete. Analyzed {len(final_results) if final_results is not None else 0} entities")
+        logger.info(f"Parallel processing enabled {max_workers}-core utilization for anomaly detection")
+        
+        return final_results if final_results is not None else pd.DataFrame()
+    
+    def _aggregate_anomaly_results(self, results: Dict[str, pd.DataFrame], original_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Properly aggregate anomaly results with consistent channelId handling
+        """
+        if not results:
+            logger.warning("No anomaly detection results to aggregate")
+            return pd.DataFrame()
+        
+        # Get all unique channel IDs from original data
+        if 'channelId' in original_df.columns:
+            all_channel_ids = set(original_df['channelId'].unique())
+            logger.info(f"Found {len(all_channel_ids)} unique channels in original data")
+        else:
+            logger.warning("No channelId column in original data")
+            all_channel_ids = set()
+        
+        # Collect additional channel IDs from results
         for anomaly_type, result_df in results.items():
             if not result_df.empty and 'channelId' in result_df.columns:
-                all_channel_ids.update(result_df['channelId'].unique())
+                result_channel_ids = set(result_df['channelId'].unique())
+                all_channel_ids.update(result_channel_ids)
+                logger.info(f"{anomaly_type} results contain {len(result_channel_ids)} channels")
         
-        # If no channel IDs found, use original DataFrame
-        if not all_channel_ids and 'channelId' in df.columns:
-            all_channel_ids = set(df['channelId'].unique())
+        if not all_channel_ids:
+            logger.error("No channel IDs found in any results")
+            return pd.DataFrame()
         
-        # Create base DataFrame with all channel IDs
-        if all_channel_ids:
-            final_results = pd.DataFrame({'channelId': list(all_channel_ids)})
+        # Create base DataFrame with all channels
+        final_results = pd.DataFrame({'channelId': list(all_channel_ids)})
+        logger.info(f"Created base result DataFrame with {len(final_results)} channels")
         
-        # Merge each result DataFrame
+        # Initialize anomaly columns with defaults
+        anomaly_columns = {
+            'temporal_anomaly': False,
+            'geographic_anomaly': False, 
+            'device_anomaly': False,
+            'behavioral_anomaly': False,
+            'volume_anomaly': False,
+            'overall_anomaly_count': 0
+        }
+        
+        for col, default_val in anomaly_columns.items():
+            final_results[col] = default_val
+        
+        # Merge results with proper error handling and column mapping
         for anomaly_type, result_df in results.items():
             if result_df.empty:
                 logger.warning(f"Empty result for {anomaly_type} anomaly detection")
                 continue
             
             try:
-                if final_results is None:
-                    final_results = result_df.copy()
-                else:
-                    # Ensure consistent merge key
-                    if 'channelId' in result_df.columns and 'channelId' in final_results.columns:
-                        final_results = final_results.merge(result_df, on='channelId', how='outer')
+                # Ensure channelId column exists
+                if 'channelId' not in result_df.columns:
+                    if result_df.index.name == 'channelId':
+                        result_df = result_df.reset_index()
                     else:
-                        logger.warning(f"Cannot merge {anomaly_type} results - missing channelId column")
+                        logger.warning(f"Cannot process {anomaly_type} results - no channelId column or index")
                         continue
+                
+                # Map specific anomaly columns based on detection type
+                if anomaly_type == 'temporal':
+                    self._merge_temporal_results(final_results, result_df)
+                elif anomaly_type == 'geographic':
+                    self._merge_geographic_results(final_results, result_df)
+                elif anomaly_type == 'device':
+                    self._merge_device_results(final_results, result_df)
+                elif anomaly_type == 'behavioral':
+                    self._merge_behavioral_results(final_results, result_df)
+                elif anomaly_type == 'volume':
+                    self._merge_volume_results(final_results, result_df)
+                
+                logger.info(f"Successfully merged {anomaly_type} results with {len(result_df)} rows")
+                
             except Exception as e:
                 logger.error(f"Failed to merge {anomaly_type} results: {e}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
                 continue
         
         # Create overall anomaly score
