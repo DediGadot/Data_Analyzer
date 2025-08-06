@@ -584,12 +584,18 @@ class OptimizedTrafficSimilarity:
         # Input validation
         if channel_features.empty:
             logger.warning("Empty channel_features provided to traffic similarity")
-            return {
-                'error': 'Empty channel features',
-                'similar_pairs': [],
-                'num_channels': 0,
-                'similarity_threshold': 0.5
-            }
+            return self._create_fallback_similarity_results(0)
+        
+        # Validate that we have the minimum required columns and data
+        if len(channel_features) < 2:
+            logger.warning(f"Insufficient data for similarity computation: {len(channel_features)} channels")
+            return self._create_fallback_similarity_results(len(channel_features))
+        
+        # Check if we have any numeric features for similarity computation
+        numeric_cols = channel_features.select_dtypes(include=[np.number]).columns
+        if len(numeric_cols) == 0:
+            logger.warning("No numeric features available for similarity computation")
+            return self._create_fallback_similarity_results(len(channel_features))
         
         try:
             if self.approximate and len(channel_features) > 1000:
