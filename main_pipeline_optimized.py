@@ -44,6 +44,7 @@ from traffic_similarity import TrafficSimilarityModel
 from anomaly_detection_optimized import OptimizedAnomalyDetector
 from model_evaluation import ModelEvaluator
 from pdf_report_generator_multilingual import MultilingualPDFReportGenerator
+from fraud_classifier import FraudClassifier
 
 warnings.filterwarnings('ignore')
 
@@ -161,6 +162,7 @@ class ProgressTracker:
             "Quality Scoring",
             "Traffic Similarity",
             "Anomaly Detection",
+            "Fraud Classification",
             "Model Evaluation",
             "Result Generation",
             "Report Generation",
@@ -168,10 +170,11 @@ class ProgressTracker:
         ]
         self.step_weights = {
             "Data Loading": 15,
-            "Feature Engineering": 25,
-            "Quality Scoring": 20,
-            "Traffic Similarity": 10,
-            "Anomaly Detection": 15,
+            "Feature Engineering": 20,
+            "Quality Scoring": 15,
+            "Traffic Similarity": 8,
+            "Anomaly Detection": 12,
+            "Fraud Classification": 15,
             "Model Evaluation": 5,
             "Result Generation": 5,
             "Report Generation": 3,
@@ -702,6 +705,7 @@ class OptimizedFraudDetectionPipeline:
         )
         self.evaluator = ModelEvaluator()
         self.pdf_generator = MultilingualPDFReportGenerator(output_dir)
+        self.fraud_classifier = FraudClassifier()
     
     def run_complete_pipeline(self) -> Dict:
         """
